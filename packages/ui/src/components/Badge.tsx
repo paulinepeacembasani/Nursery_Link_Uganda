@@ -8,7 +8,7 @@ export const badgeStyles = cva('inline-flex items-center gap-1 rounded-full px-2
       neutral: 'bg-mist text-bark ring-1 ring-line',
       positive: 'bg-seedling-tint text-canopy',
       // Sun is reserved for free seedlings (FR-17): always Canopy text and outline
-      gift: 'bg-sun text-canopy ring-1 ring-canopy',
+      gift: 'bg-sun text-bark ring-1 ring-canopy',
       // Stale stock: outlined amber with a clock icon, never filled yellow
       stale: 'bg-amber-tint text-amber ring-1 ring-amber',
       danger: 'bg-laterite-tint text-laterite',

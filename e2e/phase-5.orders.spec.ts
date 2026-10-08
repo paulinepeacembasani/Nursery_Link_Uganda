@@ -4,12 +4,12 @@ import { lastSms, registerBuyer, settle, settlePayment } from './helpers';
 const DIR = 'docs/screenshots/phase-5';
 test.use({ geolocation: { latitude: 0.3533, longitude: 32.7553 }, permissions: ['geolocation'] });
 
-/** From the map: open Mukono Town Nursery and start Order & deliver. */
+/** From the map: open Mukono Town Nursery and start an order. */
 const startOrder = async (page: Page) => {
   await page.goto('/nurseries?q=Mukono%20Town&view=list');
   await expect(page.getByRole('heading', { name: '1 nursery' })).toBeVisible();
   await page.getByRole('main').getByRole('list').getByRole('button', { name: /Mukono Town Nursery/ }).click();
-  await page.getByRole('link', { name: 'Order & deliver' }).click();
+  await page.getByRole('link', { name: 'Order', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'How many seedlings?' })).toBeVisible();
 };
 

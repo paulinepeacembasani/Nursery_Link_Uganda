@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router';
+import { speciesCategories, type SpeciesCategory } from '@nurserylink/shared';
 
 /**
  * Every /nurseries filter lives in the URL, so any view can be shared or bookmarked, and the
@@ -10,6 +11,8 @@ export interface NurseryParams {
   district: string | null;
   subCounty: string | null;
   species: string | null;
+  /** Nurseries with a tree of this category in stock (Coffee, Cocoa, Indigenous…) */
+  category: SpeciesCategory | null;
   sort: 'name' | 'nearest';
   view: 'map' | 'list';
   /** The open nursery card */
@@ -18,13 +21,14 @@ export interface NurseryParams {
   directions: boolean;
 }
 
-const KEYS = { q: 'q', district: 'district', subCounty: 'sub_county', species: 'species', sort: 'sort', view: 'view', nursery: 'nursery', directions: 'directions' } as const;
+const KEYS = { q: 'q', district: 'district', subCounty: 'sub_county', species: 'species', category: 'category', sort: 'sort', view: 'view', nursery: 'nursery', directions: 'directions' } as const;
 
 export const parseParams = (p: URLSearchParams): NurseryParams => ({
   q: p.get(KEYS.q) ?? '',
   district: p.get(KEYS.district),
   subCounty: p.get(KEYS.district) ? p.get(KEYS.subCounty) : null,
   species: p.get(KEYS.species),
+  category: speciesCategories.find(c => c === p.get(KEYS.category)) ?? null,
   sort: p.get(KEYS.sort) === 'nearest' ? 'nearest' : 'name',
   view: p.get(KEYS.view) === 'list' ? 'list' : 'map',
   nursery: p.get(KEYS.nursery),

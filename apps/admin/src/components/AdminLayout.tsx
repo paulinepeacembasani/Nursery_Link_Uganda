@@ -1,6 +1,6 @@
 import { BrandMark, Button, OfflineBanner, Toaster, cn } from '@nurserylink/ui';
 import {
-  AlertCircle, Banknote, BarChart3, BookOpen, ClipboardList, Gift, Layers, LogOut, Map as MapIcon, Menu, Newspaper, Package, ScrollText, Truck, X, type LucideIcon,
+  AlertCircle, Banknote, BarChart3, BookOpen, ClipboardList, Gift, Layers, LogOut, Map as MapIcon, Menu, MessageSquare, Newspaper, Package, ScrollText, Sprout, Truck, X, type LucideIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, ScrollRestoration, useLocation } from 'react-router';
@@ -29,11 +29,13 @@ const SECTIONS: { title?: string; items: Item[] }[] = [
     items: [
       { to: '/orders', label: en.nav.orders, icon: Package },
       { to: '/payouts', label: en.nav.payouts, icon: Banknote },
+      { to: '/service-requests', label: en.nav.serviceRequests, icon: Sprout },
     ],
   },
   {
     title: en.nav.sections.analysis,
     items: [
+      { to: '/feedback', label: en.nav.feedback, icon: MessageSquare },
       { to: '/shadow', label: en.nav.shadow, icon: ClipboardList },
       { to: '/audit-log', label: en.nav.audit, icon: ScrollText },
     ],
@@ -46,7 +48,7 @@ const link = ({ isActive }: { isActive: boolean }) =>
     // The active section: a lighter row with a murram bar on its left edge
     isActive
       ? 'bg-paper/12 text-paper before:absolute before:inset-y-2 before:left-0 before:w-1 before:rounded-full before:bg-murram-light'
-      : 'text-paper/75 hover:bg-paper/8 hover:text-paper'
+      : 'text-paper/90 hover:bg-paper/8 hover:text-paper'
   );
 
 /** A woven band (murram, sun, leaf, canopy), as on the public site's footer. */
@@ -77,7 +79,7 @@ const Sidebar = ({ name }: { name: string | undefined }) => {
     <nav aria-label="Admin" className="flex flex-1 flex-col gap-3">
       {SECTIONS.map((section, i) => (
         <div key={section.title ?? i} className="flex flex-col gap-0.5">
-          {section.title && <p className="px-3 pb-1 text-xs font-bold text-paper/55">{section.title}</p>}
+          {section.title && <p className="px-3 pb-1 text-xs font-bold text-paper/85">{section.title}</p>}
           {section.items.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} end={to === '/'} className={link}>
               <Icon aria-hidden className="size-4" />

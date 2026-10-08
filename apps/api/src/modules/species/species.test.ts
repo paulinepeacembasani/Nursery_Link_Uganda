@@ -1,3 +1,4 @@
+import { SPECIES } from '../../db/seed/species.js';
 import { RecordingQueue } from '../../jobs/queue.js';
 import request from 'supertest';
 import { pino } from 'pino';
@@ -21,7 +22,7 @@ const listSpecies = async (query: string) =>
 describe('GET /species (FR-18)', () => {
   it('lists alphabetically with local names, a thumbnail and how many nurseries stock it', async () => {
     const body = await listSpecies('?limit=100');
-    expect(body.meta.total).toBe(21);
+    expect(body.meta.total).toBe(SPECIES.length);
     const names = body.data.map(s => s.common_name);
     expect(names).toEqual([...names].sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())));
     expect(body.data.find(s => s.slug === 'mvule')).toMatchObject({

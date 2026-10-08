@@ -78,12 +78,30 @@ export const SeedlingIcon = (p: IconProps) => (
   </Svg>
 );
 
+/** Coffee: a bean */
+export const CoffeeIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <ellipse cx="12" cy="12" rx="6.5" ry="9" transform="rotate(35 12 12)" />
+    <path d="M8 18c3-2 2-5 4-6.5s3-3.5 4-5.5" />
+  </Svg>
+);
+
+/** Cocoa: a ridged pod */
+export const CocoaIcon = (p: IconProps) => (
+  <Svg {...p}>
+    <path d="M12 3c3.5 0 6 4 6 9s-2.5 9-6 9-6-4-6-9 2.5-9 6-9Z" />
+    <path d="M12 3v18M9 4.5c-1 2-1.5 4.5-1.5 7.5s.5 5.5 1.5 7.5M15 4.5c1 2 1.5 4.5 1.5 7.5s-.5 5.5-1.5 7.5" />
+  </Svg>
+);
+
 export const SPECIES_CATEGORY_ICONS = {
   indigenous: IndigenousIcon,
   agroforestry: AgroforestryIcon,
   exotic: ExoticIcon,
   ornamental: OrnamentalIcon,
   medicinal: MedicinalIcon,
+  coffee: CoffeeIcon,
+  cocoa: CocoaIcon,
 } as const;
 
 export const SpeciesCategoryIcon = ({ category, ...p }: IconProps & { category: keyof typeof SPECIES_CATEGORY_ICONS }) => {

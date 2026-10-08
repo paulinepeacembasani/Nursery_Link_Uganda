@@ -34,6 +34,8 @@ export default defineConfig({
         // E2E_TRIAL=1 switches both off for the trial journey (e2e/trial.journey.spec.ts)
         PHONE_VERIFICATION: TRIAL ? 'off' : 'required',
         PAYMENTS: TRIAL ? 'off' : 'on',
+        // The first-visit notice would cover every page the suite opens; WelcomeNotice.test.tsx covers it
+        DEMO_NOTICE: 'off',
         SMS_PROVIDER: 'mock',
         ROUTING_PROVIDER: 'mock',
         EMAIL_PROVIDER: 'mock',

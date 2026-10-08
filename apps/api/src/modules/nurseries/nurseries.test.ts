@@ -86,6 +86,13 @@ describe('GET /nurseries', () => {
     expect(byTree).toEqual(names(await list('?species=mvule')));
   });
 
+  it('filters by seedling category, so one nursery can appear under several', async () => {
+    expect(names(await list('?category=coffee'))).toEqual(["Kasawo Farmers' Nursery", 'Kyampisi Agroforestry Group', 'Nabbaale Tree Hub']);
+    expect(names(await list('?category=cocoa'))).toEqual(['Kyampisi Agroforestry Group', 'Nabbaale Tree Hub']);
+    expect(names(await list('?category=medicinal'))).toContain('Nabbaale Tree Hub');
+    await request(app).get('/api/v1/nurseries?category=fruit').expect(400);
+  });
+
   it('filters by active campaign and combines filters', async () => {
     expect(names(await list('?has_campaign=true'))).toEqual(['Katosi Lakeshore Seedlings', 'Nakisunga Community Nursery']);
     expect((await list('?has_campaign=false')).meta.total).toBe(13);

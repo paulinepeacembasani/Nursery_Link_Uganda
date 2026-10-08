@@ -25,7 +25,7 @@ test.describe('phase 4: Library, News, Home', () => {
     // The list already shows in the sheet under the map: no toggle needed
     await page.getByRole('region', { name: 'Find nurseries' }).getByRole('list').getByRole('button').first().click(); // 2: the card is open
     await expect(page.getByRole('heading', { name: 'In stock' })).toBeVisible();
-    await page.getByRole('link', { name: 'Order & deliver' }).click(); // 3: checkout starts (sign-in first for visitors)
+    await page.getByRole('link', { name: 'Order', exact: true }).click(); // 3: checkout starts (sign-in first for visitors)
     await expect(page).toHaveURL(/\/login\?next=%2Fnurseries%2F[0-9a-f-]+%2Forder/);
   });
 
@@ -34,7 +34,7 @@ test.describe('phase 4: Library, News, Home', () => {
     await page.goto('/');
     await page.getByRole('link', { name: /Find nurseries/ }).first().click(); // 1
     await page.getByRole('list').getByRole('button').first().click(); // 2
-    await page.getByRole('link', { name: 'Order & deliver' }).click(); // 3
+    await page.getByRole('link', { name: 'Order', exact: true }).click(); // 3
     await expect(page).toHaveURL(/\/login\?next=%2Fnurseries%2F[0-9a-f-]+%2Forder/);
   });
 });

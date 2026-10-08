@@ -29,7 +29,7 @@ const LocationMap = ({ nursery, drop = null, label }: { nursery: LatLng; drop?: 
         <Marker position={[nursery.lat, nursery.lng]} icon={nurseryIcon} interactive={false} keyboard={false} />
         {drop && (
           <>
-            <Polyline positions={[[nursery.lat, nursery.lng], [drop.lat, drop.lng]]} pathOptions={{ color: '#1e5b3c', weight: 3, dashArray: '6 8' }} interactive={false} />
+            <Polyline positions={[[nursery.lat, nursery.lng], [drop.lat, drop.lng]]} pathOptions={{ color: '#1d7647', weight: 3, dashArray: '6 8' }} interactive={false} />
             <Marker position={[drop.lat, drop.lng]} icon={dropIcon} interactive={false} keyboard={false} />
           </>
         )}

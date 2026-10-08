@@ -11,12 +11,12 @@ import { en } from '../../copy/en';
  */
 
 export const CHART = {
-  canopy: '#123d2a',
-  forest: '#1e5b3c',
-  leaf: '#2a7d45',
+  canopy: '#1b6e44',
+  forest: '#1d7647',
+  leaf: '#22804d',
   leafLight: '#7cc48a',
   murram: '#b8501f',
-  murramLight: '#f0b48f',
+  murramLight: '#ffd9c2',
   sun: '#f2b705',
   sand: '#d9c9a8',
   bark: '#5e5248',
@@ -75,7 +75,7 @@ export const KpiCard = ({ label, value, previous, format, comparison, accent = f
   return (
     <div className={cn('flex flex-col gap-2 rounded-lg p-4 shadow-card ring-1', accent ? 'on-dark bg-canopy ring-canopy' : 'bg-paper ring-line', className)}>
       <p className={cn('text-sm font-bold', accent ? 'text-mist/85' : 'text-bark-muted')}>{label}</p>
-      <p className={cn('font-display text-2xl leading-none font-semibold tracking-tight tabular-nums sm:text-3xl', accent ? 'text-paper' : 'text-canopy')}>{format(value)}</p>
+      <p className={cn('font-stat text-3xl leading-none font-bold tabular-nums sm:text-4xl', accent ? 'text-paper' : 'text-canopy')}>{format(value)}</p>
       <p className={cn('flex items-center gap-1 text-xs', accent ? 'text-mist/85' : 'text-bark-muted')}>
         {change === null ? (
           <span className={cn('rounded-full px-1.5 py-0.5 font-bold', accent ? 'bg-paper/15 text-paper' : 'bg-seedling-tint text-canopy')}>{en.insights.newValue}</span>
@@ -174,7 +174,7 @@ export const AreaChart = ({ points, format, axisFormat, label, height = 240 }: {
           style={{ left: Math.min(Math.max(x(hover), 70), w - 70), top: y(active.value) - 10 }}
         >
           <span className="block font-bold">{format(active.value)}</span>
-          <span className="text-mist/80">{active.long}</span>
+          <span className="text-mist/90">{active.long}</span>
         </div>
       )}
       <table className="sr-only">

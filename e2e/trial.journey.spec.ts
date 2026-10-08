@@ -28,7 +28,7 @@ test.describe('trial mode', () => {
     // Order from Mukono Town Nursery, collecting it
     await page.goto('/nurseries?q=Mukono%20Town&view=list');
     await page.getByRole('main').getByRole('list').getByRole('button', { name: /Mukono Town Nursery/ }).click();
-    await page.getByRole('link', { name: 'Order & deliver' }).click();
+    await page.getByRole('link', { name: 'Order', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'How many seedlings?' })).toBeVisible();
     const more = page.getByRole('button', { name: /^More / }).first();
     for (let i = 0; i < 3; i++) await more.click();

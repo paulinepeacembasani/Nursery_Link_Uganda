@@ -1,0 +1,60 @@
+name: Production
+
+# After CI passes on main, Render deploys the commit (render.yaml: autoDeployTrigger: checksPass).
+# This waits until the live API reports that commit in /health, then smoke-tests the public site,
+# the admin console and the API. A failure here means production is not running the new code.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+env:
+  API_URL: ${{ vars.PROD_API_URL || 'https://nurserylink-api.onrender.com' }}
+  WEB_URL: ${{ vars.PROD_WEB_URL || 'https://nurserylink-web.onrender.com' }}
+  ADMIN_URL: ${{ vars.PROD_ADMIN_URL || 'https://nurserylink-admin.onrender.com' }}
+
+jobs:
+  verify:
+    name: Deployed and healthy
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Wait for the API to run this commit
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          # Render builds and migrates first, and the free plan wakes from sleep slowly: allow 35 minutes
+          for i in $(seq 1 70); do
+            body=$(curl -fsS --max-time 60 "$API_URL/api/v1/health" || true)
+            commit=$(printf '%s' "$body" | jq -r '.data.commit // empty' 2>/dev/null || true)
+            status=$(printf '%s' "$body" | jq -r '.data.status // empty' 2>/dev/null || true)
+            echo "attempt $i: status=${status:-none} commit=${commit:-none}"
+            if [ "$commit" = "$SHA" ] && [ "$status" = ok ]; then exit 0; fi
+            sleep 30
+          done
+          echo "::error::The API did not report commit $SHA within 35 minutes. Check the deploy in the Render dashboard."
+          exit 1
+      - name: Smoke test the live sites and API
+        run: |
+          check() { # url, text the response must contain
+            code=$(curl -sS -o page.out -w '%{http_code}' --max-time 60 "$1")
+            if [ "$code" != 200 ] || ! grep -q "$2" page.out; then echo "::error::$1 returned $code or lacks '$2'"; exit 1; fi
+            echo "ok  $1"
+          }
+          check "$WEB_URL/" "Nursery Link"
+          check "$WEB_URL/nurseries" "Nursery Link"
+          check "$WEB_URL/api/v1/health" '"status":"ok"'
+          check "$WEB_URL/api/v1/nurseries?limit=1" '"data"'
+          check "$WEB_URL/api/v1/species?limit=1" '"data"'
+          check "$ADMIN_URL/" "Nursery Link"
+          check "$API_URL/api/v1/docs/openapi.json" '"openapi"'

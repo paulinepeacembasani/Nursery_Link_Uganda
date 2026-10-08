@@ -28,6 +28,13 @@ describe('GET /api/v1/health', () => {
     expect(res.headers['x-request-id']).toBeTruthy();
   });
 
+  it('reports the deployed commit when the host provides it', async () => {
+    const plain = createApp({ config: testConfig(inject('databaseUrl')), pool, logger, providers: mockProviders(), queue: new RecordingQueue() });
+    expect(dataOf(await request(plain).get('/api/v1/health').expect(200))).toMatchObject({ commit: null });
+    const deployed = createApp({ config: { ...testConfig(inject('databaseUrl')), RENDER_GIT_COMMIT: 'abc1234' }, pool, logger, providers: mockProviders(), queue: new RecordingQueue() });
+    expect(dataOf(await request(deployed).get('/api/v1/health').expect(200))).toMatchObject({ commit: 'abc1234' });
+  });
+
   it('tells the checkout that Airtel Money is unavailable in live mode', async () => {
     const live = { ...mockProviders(), payments: paymentProviders('live', new MockPayment(), { mtn_momo: new MockPayment() }) };
     const app = createApp({ config: testConfig(inject('databaseUrl')), pool, logger, providers: live, queue: new RecordingQueue() });

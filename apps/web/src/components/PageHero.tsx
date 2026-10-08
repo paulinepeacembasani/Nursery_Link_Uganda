@@ -23,7 +23,7 @@ export const PageHero = ({ title, intro, photo, focus = 'object-center', childre
       </div>
       <div className={`${PAGE_FRAME} py-10 md:py-14`}>
         <div className="flex flex-col gap-3 md:w-1/2">
-          <h1 className="text-3xl leading-tight text-paper md:text-5xl">{title}</h1>
+          <h1 className="text-h1 text-paper">{title}</h1>
           <span aria-hidden className="block h-1 w-12 rounded-full bg-murram-light" />
           {intro && <p className="max-w-xl text-lg text-mist/90">{intro}</p>}
           {children}

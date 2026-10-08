@@ -1,9 +1,12 @@
 name: CI
 
+# Runs on every pull request and every push to main. Render deploys main only after these checks
+# pass (render.yaml: autoDeployTrigger: checksPass); .github/workflows/production.yml then verifies it.
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -15,12 +18,12 @@ permissions:
 jobs:
   checks:
     name: Lint, typecheck, tests, budgets
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # pnpm 11 needs Node 22.13+; this is also what development uses
           node-version: 22
@@ -40,7 +43,7 @@ jobs:
 
   e2e:
     name: End-to-end, accessibility, Lighthouse
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: checks
     services:
@@ -54,9 +57,9 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U nurserylink" --health-interval 5s --health-timeout 5s --health-retries 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           # pnpm 11 needs Node 22.13+; this is also what development uses
           node-version: 22
@@ -91,3 +94,15 @@ jobs:
             e2e/.results
             docs/lighthouse
           retention-days: 14
+
+  # One stable check name for branch protection: passes only when every job above passed
+  ci-passed:
+    name: CI passed
+    runs-on: ubuntu-24.04
+    needs: [checks, e2e]
+    if: ${{ always() }}
+    steps:
+      - name: All jobs succeeded
+        run: |
+          test "${{ needs.checks.result }}" = success
+          test "${{ needs.e2e.result }}" = success

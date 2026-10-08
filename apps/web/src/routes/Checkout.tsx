@@ -33,7 +33,7 @@ const Progress = ({ step }: { step: Step }) => {
   );
 };
 
-/** Order & deliver: seedlings → delivery → quote and pay (FR-12–FR-14, FR-25). */
+/** Order: seedlings → delivery → quote and pay (FR-12–FR-14, FR-25). */
 const Checkout = () => {
   const { id = '' } = useParams();
   const [params, setParams] = useSearchParams();
@@ -178,8 +178,9 @@ const Checkout = () => {
         />
       )}
 
+      {/* Phones: Next stays at the bottom of the screen, in thumb reach, however long the tree list is */}
       {step !== 'pay' && (
-        <div className="flex gap-2">
+        <div className="sticky bottom-0 z-20 -mx-4 flex gap-2 border-t border-line bg-mist/95 px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-sm md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
           {step === 'delivery' && <Button variant="secondary" onClick={() => { go('seedlings'); }}>{en.checkout.backStep}</Button>}
           <Button size="lg" className="flex-1" onClick={next}>{en.checkout.next}</Button>
         </div>

@@ -25,6 +25,8 @@ const schema = z
     /** Where uploaded photos are stored, and the URL path they are served at */
     MEDIA_DIR: z.string().default('data/media'),
     MEDIA_PUBLIC_PATH: z.string().regex(/^\/[a-z0-9/_-]*[a-z0-9]$/).default('/media'),
+    /** The deployed Git commit (Render sets it); /health reports it so the pipeline can confirm a deploy */
+    RENDER_GIT_COMMIT: optional,
     /** Serve the OpenAPI document and Swagger UI at /api/v1/docs */
     API_DOCS: z.enum(['true', 'false']).default('true').transform(v => v === 'true'),
     DATABASE_URL: z.url(),
@@ -50,6 +52,10 @@ const schema = z
     PHONE_VERIFICATION: z.enum(['required', 'off']).default('required'),
     PAYMENTS: z.enum(['on', 'off']).default('on'),
     PAYMENT_PROVIDER_MODE: z.enum(['mock', 'live']).default('mock'),
+    /** The first-visit notice that nursery data is sample data and the site is still being built */
+    DEMO_NOTICE: z.enum(['on', 'off']).default('on'),
+    /** The needs-assessment survey (e.g. a Google Form link); offered in the first-visit notice and on /survey */
+    SURVEY_URL: z.url().optional(),
     MTN_BASE_URL: z.url().default('https://sandbox.momodeveloper.mtn.com'),
     MTN_TARGET_ENVIRONMENT: z.string().default('sandbox'),
     MTN_CURRENCY: z.string().length(3).default('EUR'),
@@ -72,8 +78,14 @@ const schema = z
     /** Shared secret in the inbound-SMS callback URL (?token=…); the gateway cannot sign requests */
     SMS_INBOUND_TOKEN: z.string().min(24, 'SMS_INBOUND_TOKEN must be at least 24 characters').optional(),
 
-    ROUTING_PROVIDER: z.enum(['mock', 'osrm']).default('mock'),
+    /**
+     * Road distances and directions: mock (straight line × 1.3), a self-hosted OSRM, or the hosted
+     * OpenRouteService API (free key from https://openrouteservice.org/dev/#/signup).
+     */
+    ROUTING_PROVIDER: z.enum(['mock', 'osrm', 'openrouteservice']).default('mock'),
     OSRM_URL: z.url().default('http://localhost:5000'),
+    ORS_API_KEY: optional,
+    ORS_URL: z.url().default('https://api.openrouteservice.org'),
 
     /** Place search by name (villages, landmarks): mock, or OpenStreetMap's Nominatim */
     GEOCODER_PROVIDER: z.enum(['mock', 'nominatim']).default('mock'),
@@ -117,6 +129,7 @@ const schema = z
       }
     }
     if (env.SMS_PROVIDER === 'africastalking') require(['AT_USERNAME', 'AT_API_KEY', 'SMS_INBOUND_TOKEN'], 'SMS_PROVIDER=africastalking');
+    if (env.ROUTING_PROVIDER === 'openrouteservice') require(['ORS_API_KEY'], 'ROUTING_PROVIDER=openrouteservice');
     if (env.GEOCODER_PROVIDER === 'nominatim') require(['GEOCODER_CONTACT'], 'GEOCODER_PROVIDER=nominatim');
     if (env.EMAIL_PROVIDER === 'smtp') require(['SMTP_HOST', 'SMTP_USER', 'SMTP_PASSWORD'], 'EMAIL_PROVIDER=smtp');
   });

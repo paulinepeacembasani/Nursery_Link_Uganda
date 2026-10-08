@@ -21,7 +21,7 @@ import {
   users,
 } from '../schema.js';
 import { NFA_PRICES, SPECIES } from './species.js';
-import { NURSERIES, PREVIOUS_SEED_LOCATIONS } from './nurseries.js';
+import { NURSERIES, PREVIOUS_SEED_LOCATIONS, STOCK_ADDITIONS } from './nurseries.js';
 import { CAMPAIGNS, DELIVERY_RATES, NEWS_POSTS } from './content.js';
 
 export interface SeedOptions {
@@ -220,6 +220,25 @@ const seedNurseries = async (tx: Tx, speciesIds: Map<string, string>) => {
   return ids;
 };
 
+/** Each batch of STOCK_ADDITIONS once per database; nurseries that no longer exist are skipped. */
+const seedStockAdditions = async (tx: Tx, speciesIds: Map<string, string>, nurseryIds: Map<string, string>) => {
+  for (const batch of STOCK_ADDITIONS) {
+    const done = await tx.execute(sql`SELECT 1 FROM audit_log WHERE action = 'seed.stock_added' AND after->>'key' = ${batch.key} LIMIT 1`);
+    if (done.rows.length > 0) continue;
+    let added = 0;
+    for (const [name, slug, quantityAvailable, unitPrice] of batch.lines) {
+      const speciesId = speciesIds.get(slug);
+      if (!speciesId) throw new Error(`Unknown species "${slug}" in stock additions for ${name}`);
+      const nurseryId = nurseryIds.get(name);
+      if (!nurseryId) continue;
+      const inserted = await tx.insert(inventory).values({ nurseryId, speciesId, quantityAvailable, unitPrice }).onConflictDoNothing().returning({ id: inventory.id });
+      added += inserted.length;
+    }
+    await tx.execute(sql`INSERT INTO audit_log (actor_id, action, entity, entity_id, after)
+                         VALUES (NULL, 'seed.stock_added', 'inventory', NULL, ${JSON.stringify({ key: batch.key, lines: added })}::jsonb)`);
+  }
+};
+
 const seedContent = async (tx: Tx, districtId: string, speciesIds: Map<string, string>, nurseryIds: Map<string, string>) => {
   for (const rate of DELIVERY_RATES) {
     const [existing] = await tx.select({ id: deliveryRates.id }).from(deliveryRates).where(eq(deliveryRates.vehicle, rate.vehicle));
@@ -355,6 +374,7 @@ export const seed = async (pool: pg.Pool, options: SeedOptions) => {
     const districtId = await seedBoundaries(tx);
     const speciesIds = await seedSpecies(tx);
     const nurseryIds = await seedNurseries(tx, speciesIds);
+    await seedStockAdditions(tx, speciesIds, nurseryIds);
     await seedContent(tx, districtId, speciesIds, nurseryIds);
     await seedCertified2018(tx);
     await seedAdmin(tx, options.admin);

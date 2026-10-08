@@ -131,7 +131,10 @@ const Library = () => {
       )}
       {index.data && index.data.items.length > 0 && (
         <div className="flex flex-col gap-6">
-          <p className="text-sm text-bark-muted" aria-live="polite">{en.library.count(index.data.items.length)}</p>
+          <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-bark-muted">
+            <span aria-live="polite">{en.library.count(index.data.items.length)}</span>
+            {category && <Link to={`/nurseries?category=${category}`} className="font-bold text-forest">{en.library.nurseriesFor(en.categories[category])}</Link>}
+          </p>
           {[...groups.entries()].map(([letter, items]) => (
             <section key={letter} aria-labelledby={`letter-${letter}`} className="flex scroll-mt-32 flex-col gap-2">
               <h2 id={`letter-${letter}`} className="scroll-mt-32 font-serif text-2xl font-semibold">{letter}</h2>

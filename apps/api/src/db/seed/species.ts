@@ -334,4 +334,47 @@ export const SPECIES: SeedSpecies[] = [
     localNames: [],
     media: [],
   },
+
+  // ── Coffee ───────────────────────────────────────────────
+  {
+    slug: 'robusta-coffee',
+    scientificName: 'Coffea canephora',
+    commonName: 'Robusta coffee',
+    category: 'coffee',
+    growthPace: 'moderate',
+    heightTimeline: [{ years: 1, height_m: 0.6 }, { years: 3, height_m: 2 }, { years: 6, height_m: 3.5 }],
+    canopyNotes: 'Bushy shrub, usually pruned to 2–3 m; first crop after about 2–3 years. Plant 3 m apart, with light shade.',
+    rootNotes: 'Shallow feeder roots; mulch well and keep weeds away. Ask for clonal (wilt-resistant) seedlings.',
+    ecologicalZones: [LAKE, FARMLAND, MOIST],
+    localNames: [{ language: 'Luganda', name: 'Mmwanyi' }],
+    media: [],
+  },
+  {
+    slug: 'arabica-coffee',
+    scientificName: 'Coffea arabica',
+    commonName: 'Arabica coffee',
+    category: 'coffee',
+    growthPace: 'moderate',
+    heightTimeline: [{ years: 1, height_m: 0.5 }, { years: 3, height_m: 1.8 }, { years: 6, height_m: 3 }],
+    canopyNotes: 'Compact shrub for the highlands (Mt Elgon, Rwenzori, West Nile hills); first crop after about 3 years.',
+    rootNotes: 'Needs deep, well-drained soil; grows best under light shade trees such as Grevillea.',
+    ecologicalZones: [HIGHLAND],
+    localNames: [],
+    media: [],
+  },
+
+  // ── Cocoa ────────────────────────────────────────────────
+  {
+    slug: 'cocoa',
+    scientificName: 'Theobroma cacao',
+    commonName: 'Cocoa',
+    category: 'cocoa',
+    growthPace: 'moderate',
+    heightTimeline: [{ years: 1, height_m: 0.8 }, { years: 3, height_m: 2.5 }, { years: 8, height_m: 5 }],
+    canopyNotes: 'Small understorey tree; pods grow on the trunk from about year 3. Plant 3 m apart under banana or shade trees.',
+    rootNotes: 'Taproot with shallow feeder roots; needs moist, well-drained soil and shelter from wind.',
+    ecologicalZones: [MOIST, LAKE, WETLAND],
+    localNames: [],
+    media: [],
+  },
 ];

@@ -7,6 +7,10 @@ import {
   adminRefundSchema,
   applicationReviewSchema,
   applicationsQuerySchema,
+  serviceRequestsQuerySchema,
+  feedbackQuerySchema,
+  feedbackUpdateSchema,
+  serviceRequestUpdateSchema,
   shadowLayerSchema,
   shadowRunCreateSchema,
   campaignCreateSchema,
@@ -46,6 +50,8 @@ import { SpeciesAdminService } from '../species/species.admin.service.js';
 import type { SpeciesService } from '../species/species.service.js';
 import type { OrdersService } from '../orders/orders.service.js';
 import type { ApplicationsService } from '../campaigns/applications.service.js';
+import type { ServiceRequestsService } from '../serviceRequests/serviceRequests.service.js';
+import type { FeedbackService } from '../feedback/feedback.service.js';
 import type { ShadowService } from '../shadow/shadow.service.js';
 import { MAX_UPLOAD_BYTES, type MediaService } from '../media/media.service.js';
 import multer from 'multer';
@@ -91,6 +97,8 @@ export const importQuery = z.object({ commit: booleanParam.default(false) });
 export const ordersQuery = adminOrdersQuerySchema.extend(paginationQuerySchema.shape);
 export const payoutsQuery = paginationQuerySchema.extend({ status: paymentStatusSchema.optional() });
 export const applicationsQuery = applicationsQuerySchema.extend(paginationQuerySchema.shape);
+export const serviceRequestsQuery = serviceRequestsQuerySchema.extend(paginationQuerySchema.shape);
+export const feedbackQuery = feedbackQuerySchema.extend(paginationQuerySchema.shape);
 export const layerQuery = z.object({ layer: shadowLayerSchema.default('shadows') });
 export const runIdParams = z.object({ runId: z.uuid() });
 
@@ -99,7 +107,7 @@ export const runIdParams = z.object({ runId: z.uuid() });
  * including paths that do not exist (visitors get 401, buyers 403, admins 404).
  */
 
-export const adminRoutes = (deps: { db: Database; species: SpeciesService; orders: OrdersService; applications: ApplicationsService; shadow: ShadowService; media: MediaService; limit: Limit }): Router => {
+export const adminRoutes = (deps: { db: Database; species: SpeciesService; orders: OrdersService; applications: ApplicationsService; serviceRequests: ServiceRequestsService; feedback: FeedbackService; shadow: ShadowService; media: MediaService; limit: Limit }): Router => {
   const { db } = deps;
   const nurseries = new NurseriesAdminService({ db });
   const inventory = new InventoryService({ db });
@@ -256,6 +264,28 @@ export const adminRoutes = (deps: { db: Database; species: SpeciesService; order
   router.put('/applications/:id', validate({ params: idParams, body: applicationReviewSchema }), async (req, res) => {
     const { params, body } = parsed<{ params: { id: string }; body: z.output<typeof applicationReviewSchema> }>(res);
     res.json({ data: await deps.applications.review(actorId(req), params.id, body) });
+  });
+
+  // ── Service requests ─────────────────────────────────────
+  router.get('/service-requests', validate({ query: serviceRequestsQuery }), async (_req, res) => {
+    const { query: q } = parsed<{ query: z.output<typeof serviceRequestsQuery> }>(res);
+    const { items, meta } = await deps.serviceRequests.listAll({ status: q.status, service: q.service }, { page: q.page, limit: q.limit });
+    res.json({ data: items, meta });
+  });
+  router.put('/service-requests/:id', validate({ params: idParams, body: serviceRequestUpdateSchema }), async (req, res) => {
+    const { params, body } = parsed<{ params: { id: string }; body: z.output<typeof serviceRequestUpdateSchema> }>(res);
+    res.json({ data: await deps.serviceRequests.update(actorId(req), params.id, body) });
+  });
+
+  // ── Feedback ─────────────────────────────────────────────
+  router.get('/feedback', validate({ query: feedbackQuery }), async (_req, res) => {
+    const { query: q } = parsed<{ query: z.output<typeof feedbackQuery> }>(res);
+    const { items, meta } = await deps.feedback.list({ status: q.status, kind: q.kind }, { page: q.page, limit: q.limit });
+    res.json({ data: items, meta });
+  });
+  router.put('/feedback/:id', validate({ params: idParams, body: feedbackUpdateSchema }), async (req, res) => {
+    const { params, body } = parsed<{ params: { id: string }; body: z.output<typeof feedbackUpdateSchema> }>(res);
+    res.json({ data: await deps.feedback.update(actorId(req), params.id, body) });
   });
 
   // ── Nursery Shadow ───────────────────────────────────────

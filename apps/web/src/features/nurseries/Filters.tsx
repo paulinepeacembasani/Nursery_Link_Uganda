@@ -1,3 +1,4 @@
+import { speciesCategories } from '@nurserylink/shared';
 import { Field, Select, cn } from '@nurserylink/ui';
 import { LocateFixed } from 'lucide-react';
 import { SearchBox, type SuggestConfig } from '../../components/SearchBox';
@@ -27,6 +28,30 @@ export const BoundaryFilters = ({ district, subCounty, onChange }: { district: s
           </Select>
         )}
       </Field>
+    </div>
+  );
+};
+
+/**
+ * Seedling type (Coffee, Cocoa, Indigenous…): shows nurseries with at least one tree of that type in
+ * stock, so one nursery can appear under several types.
+ */
+export const CategoryFilter = ({ value, onChange }: { value: NurseryParams['category']; onChange: (u: ParamUpdate) => void }) => {
+  const chip = (on: boolean) =>
+    cn('min-h-11 shrink-0 rounded-full px-3.5 text-sm font-bold ring-1 transition-colors', on ? 'bg-forest text-paper ring-forest' : 'bg-paper text-forest ring-field hover:bg-forest-tint');
+  return (
+    <div role="group" aria-labelledby="category-filter-label" className="flex flex-col gap-1.5">
+      <span id="category-filter-label" className="font-bold text-bark">{en.nurseries.category}</span>
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 lg:flex-wrap">
+        <button type="button" aria-pressed={value === null} onClick={() => { onChange({ category: null }); }} className={chip(value === null)}>
+          {en.nurseries.allCategories}
+        </button>
+        {speciesCategories.map(c => (
+          <button key={c} type="button" aria-pressed={value === c} onClick={() => { onChange({ category: value === c ? null : c }); }} className={chip(value === c)}>
+            {en.categories[c]}
+          </button>
+        ))}
+      </div>
     </div>
   );
 };
@@ -79,6 +104,7 @@ export const FilterPanel = ({ params, update, onNearest, findingLocation, showSe
   <div className="flex flex-col gap-3">
     {showSearch && <SearchBox value={params.q} onChange={q => { update({ q }, { replace: true }); }} suggest={nurserySuggest(update)} />}
     <BoundaryFilters district={params.district} subCounty={params.subCounty} onChange={u => { update(u); }} />
+    <CategoryFilter value={params.category} onChange={u => { update(u); }} />
     <div className="flex flex-wrap items-center gap-2">
       <NearestToggle on={params.sort === 'nearest'} busy={findingLocation} onToggle={onNearest} />
     </div>

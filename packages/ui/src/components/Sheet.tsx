@@ -74,11 +74,11 @@ export const BottomSheet = ({ title, children, snap, onSnapChange, expandLabel =
         onClick={onClick}
         aria-expanded={expanded}
         aria-label={expanded ? collapseLabel : expandLabel}
-        className="flex h-6 w-full shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
+        className="flex h-11 w-full shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
       >
         <span aria-hidden className="h-1.5 w-12 rounded-full bg-field/60" />
       </button>
-      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-6">{children}</div>
+      <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">{children}</div>
     </section>
   );
 };

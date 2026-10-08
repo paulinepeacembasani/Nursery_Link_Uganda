@@ -72,7 +72,7 @@ export const Drawer = ({ open, onOpenChange, title, children, footer, modal = tr
         </div>
         <RadixDialog.Description className="sr-only">{typeof title === 'string' ? title : 'Details'}</RadixDialog.Description>
         <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
-        {footer && <div className="border-t border-line bg-paper px-5 py-3">{footer}</div>}
+        {footer && <div className="border-t border-line bg-paper px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">{footer}</div>}
       </RadixDialog.Content>
     </RadixDialog.Portal>
   </RadixDialog.Root>

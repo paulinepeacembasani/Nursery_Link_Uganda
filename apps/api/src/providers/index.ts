@@ -15,6 +15,7 @@ import { NominatimGeocoding } from './geocoding/nominatim.js';
 import { API_VERSION } from '../lib/version.js';
 import { MockRouting } from './routing/mockRouting.js';
 import { OsrmRouting } from './routing/osrm.js';
+import { OpenRouteServiceRouting } from './routing/openRouteService.js';
 import type { RoutingProvider } from './routing/routing.js';
 import { MockSms } from './sms/mockSms.js';
 import type { SmsProvider } from './sms/sms.js';
@@ -91,7 +92,10 @@ export const createProviders = (config: Config, logger: Logger): Providers => ({
           from: config.EMAIL_FROM,
         })
       : new MockEmail(logger),
-  routing: config.ROUTING_PROVIDER === 'osrm' ? new OsrmRouting(config.OSRM_URL) : new MockRouting(),
+  routing:
+    config.ROUTING_PROVIDER === 'osrm' ? new OsrmRouting(config.OSRM_URL)
+    : config.ROUTING_PROVIDER === 'openrouteservice' ? new OpenRouteServiceRouting({ apiKey: required(config.ORS_API_KEY, 'ORS_API_KEY'), baseUrl: config.ORS_URL })
+    : new MockRouting(),
   geocoding:
     config.GEOCODER_PROVIDER === 'nominatim'
       ? new NominatimGeocoding({

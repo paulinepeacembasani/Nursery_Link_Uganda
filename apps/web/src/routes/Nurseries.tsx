@@ -44,7 +44,17 @@ const Nurseries = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only on arrival
   }, []);
 
-  const features = useMemo(() => map.data?.data.features ?? [], [map.data]);
+  // Road distances (by id) for the closest nurseries, when routing answered
+  const roadKm = useMemo(() => {
+    const km = new Map<string, number>();
+    if (nearest.data?.distanceMode !== 'road') return km;
+    for (const n of nearest.data.data) if (n.road_km !== undefined && n.road_km !== null) km.set(n.id, n.road_km);
+    return km;
+  }, [nearest.data]);
+  const features = useMemo(() => {
+    const all = map.data?.data.features ?? [];
+    return roadKm.size === 0 ? all : all.map(f => (roadKm.has(f.id) ? { ...f, properties: { ...f.properties, road_km: roadKm.get(f.id) } } : f));
+  }, [map.data, roadKm]);
   const items: ListNursery[] | undefined = useMemo(() => {
     if (nearestOn) {
       return nearest.data?.data.map(n => ({
@@ -66,10 +76,10 @@ const Nurseries = () => {
       hasCampaign: f.properties.has_active_campaign,
       isDemo: f.properties.is_demo,
       speciesCount: f.properties.species_count,
-      km: f.properties.straight_km ?? null,
-      distanceMode: 'straight_line',
+      km: roadKm.get(f.id) ?? f.properties.straight_km ?? null,
+      distanceMode: roadKm.has(f.id) ? 'road' : 'straight_line',
     }));
-  }, [nearestOn, nearest.data, map.data, features]);
+  }, [nearestOn, nearest.data, map.data, features, roadKm]);
 
   const listQuery = nearestOn ? nearest : map;
   const correctedQ = (listQuery.data?.meta as { corrected_q?: string } | undefined)?.corrected_q;
@@ -82,8 +92,8 @@ const Nurseries = () => {
     if (nearestOn) update({ sort: 'name' });
     else ask(() => { update({ sort: 'nearest' }); });
   };
-  const clearFilters = () => { update({ q: '', district: null, species: null, sort: 'name' }); };
-  const fitKey = JSON.stringify([params.q, params.district, params.subCounty, params.species]);
+  const clearFilters = () => { update({ q: '', district: null, species: null, category: null, sort: 'name' }); };
+  const fitKey = JSON.stringify([params.q, params.district, params.subCounty, params.species, params.category]);
 
   const mapElement = (
     <Suspense fallback={<MapFallback />}>
@@ -94,6 +104,7 @@ const Nurseries = () => {
         selectedId={params.nursery}
         onSelect={openNursery}
         boundary={(shape.data as unknown as GeoFeature | undefined) ?? null}
+        areaChosen={(params.subCounty ?? params.district) !== null}
         route={params.directions && route.data ? route.data.geometry.coordinates : null}
         position={position}
         onLocate={() => { ask(() => undefined); }}
@@ -171,7 +182,7 @@ const Nurseries = () => {
           type="button"
           aria-pressed={params.view === v}
           onClick={() => { update({ view: v }); }}
-          className={cn('flex min-h-10 items-center gap-1 rounded-full px-4 font-bold', params.view === v ? 'bg-forest text-paper' : 'text-forest')}
+          className={cn('flex min-h-11 items-center gap-1 rounded-full px-4 font-bold', params.view === v ? 'bg-forest text-paper' : 'text-forest')}
         >
           {v === 'map' ? <MapIcon aria-hidden className="size-4" /> : <List aria-hidden className="size-4" />}
           {v === 'map' ? en.nurseries.viewMap : en.nurseries.viewList}

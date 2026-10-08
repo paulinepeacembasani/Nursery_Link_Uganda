@@ -1,5 +1,5 @@
 import 'leaflet/dist/leaflet.css';
-import { clusterPinSvg, cn, formatDistance, nurseryPinSvg, pinLabel, pinSize } from '@nurserylink/ui';
+import { MAP_PIN_SCALE, clusterPinSvg, clusterSize, cn, formatDistance, nurseryPinSvg, pinLabel, pinSize } from '@nurserylink/ui';
 import { useQueries } from '@tanstack/react-query';
 import { unwrap } from '@nurserylink/api-client';
 import L, { type LatLngBoundsExpression } from 'leaflet';
@@ -12,16 +12,24 @@ import { en } from '../../copy/en';
 import { api } from '../../lib/api';
 import type { LatLng } from '../../lib/geo';
 import { toLatLng, type NurseryFeature, type NurseryProps } from './api';
+import { chooseLabels } from './labels';
 
 const TILE_URL = import.meta.env.VITE_TILE_URL || 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const UGANDA: LatLngBoundsExpression = [[-1.5, 29.5], [4.3, 35.1]];
 
-/** Zoom levels: clusters (national) → district outlines → named pins (sub-county). */
+/**
+ * Zoom levels: clusters (national) → district outlines and named pins (district) → every pin.
+ * With a district or sub-county chosen, pins cluster less and are named at any zoom.
+ */
 const DISTRICT_ZOOM = 10;
-const NAMED_PIN_ZOOM = 12;
+const NAMED_PIN_ZOOM = 10;
 const CLUSTER_UNTIL = 13;
+const CLUSTER_RADIUS = 44;
+const CLUSTER_RADIUS_IN_AREA = 22;
+/** Invisible margin around each pin, so small pins are still easy to tap */
+const HIT_PAD = 6;
 
-type PointProps = { id: string; name: string; gift: boolean; km: number | null; approx: boolean };
+type PointProps = { id: string; name: string; gift: boolean; demo: boolean; km: number | null; approx: boolean };
 type ClusterProps = { gift: number };
 
 // Icons are cached so re-renders don't make Leaflet rebuild markers (which also loses keyboard focus)
@@ -36,18 +44,19 @@ const cached = (key: string, make: () => L.DivIcon) => {
 };
 
 const pinIcon = (gift: boolean, selected: boolean, label: string) => cached(`p|${String(gift)}|${String(selected)}|${label}`, () => {
-  const size = pinSize(gift ? 'gift' : 'normal', selected);
+  const size = pinSize(gift ? 'gift' : 'normal', selected, MAP_PIN_SCALE);
+  const kind = gift ? 'gift' : 'normal';
   return L.divIcon({
     className: 'nl-pin',
-    html: `<span role="img" aria-label="${label.replace(/"/g, '&quot;')}">${nurseryPinSvg(gift ? 'gift' : 'normal', selected)}</span>`,
-    iconSize: [size.width, size.height],
-    iconAnchor: size.anchor,
+    html: `<span role="img" aria-label="${label.replace(/"/g, '&quot;')}" style="display:block;padding:${String(HIT_PAD)}px ${String(HIT_PAD)}px 0">${nurseryPinSvg(kind, selected, MAP_PIN_SCALE)}</span>`,
+    iconSize: [size.width + 2 * HIT_PAD, size.height + HIT_PAD],
+    iconAnchor: [size.anchor[0] + HIT_PAD, size.anchor[1] + HIT_PAD],
     tooltipAnchor: [size.width / 2, -size.height / 2],
   });
 });
 
 const clusterIcon = (count: number, gift: boolean) => cached(`c|${String(count)}|${String(gift)}`, () => {
-  const size = count < 10 ? 40 : count < 100 ? 46 : 54;
+  const size = clusterSize(count);
   return L.divIcon({ className: 'nl-cluster', html: clusterPinSvg(count, gift), iconSize: [size, size], iconAnchor: [size / 2, size / 2] });
 });
 
@@ -71,12 +80,12 @@ const labelMarker = (marker: L.Marker | null, label: string) => {
 
 const clusterLabel = (count: number, gift: number) => en.nurseries.clusterLabel(count, gift > 0);
 
-const Pins = ({ features, selectedId, onSelect }: { features: NurseryFeature[]; selectedId: string | null; onSelect: (id: string) => void }) => {
+const Pins = ({ features, selectedId, onSelect, areaChosen }: { features: NurseryFeature[]; selectedId: string | null; onSelect: (id: string) => void; areaChosen: boolean }) => {
   const map = useMap();
   const { zoom, bounds } = useView();
   const index = useMemo(() => {
     const sc = new Supercluster<PointProps, ClusterProps>({
-      radius: 56,
+      radius: areaChosen ? CLUSTER_RADIUS_IN_AREA : CLUSTER_RADIUS,
       maxZoom: CLUSTER_UNTIL,
       map: p => ({ gift: p.gift ? 1 : 0 }),
       reduce: (acc, p) => { acc.gift += p.gift; },
@@ -89,10 +98,21 @@ const Pins = ({ features, selectedId, onSelect }: { features: NurseryFeature[]; 
       }))
     );
     return sc;
-  }, [features]);
+  }, [features, areaChosen]);
 
   const clusters = index.getClusters([bounds.getWest() - 0.2, bounds.getSouth() - 0.2, bounds.getEast() + 0.2, bounds.getNorth() + 0.2], Math.round(zoom));
-  const named = zoom >= NAMED_PIN_ZOOM && clusters.length <= 60;
+  const labelled = (() => {
+    if (zoom < NAMED_PIN_ZOOM && !areaChosen) return new Set<string>();
+    const pins = clusters.flatMap(c => {
+      const [lng, lat] = c.geometry.coordinates;
+      if ('cluster' in c.properties || lat === undefined || lng === undefined || !bounds.contains([lat, lng])) return [];
+      const { x, y } = map.latLngToContainerPoint([lat, lng]);
+      const p = c.properties;
+      return [{ id: p.id, name: p.name, x, y, selected: p.id === selectedId, gift: p.gift, demo: p.demo }];
+    });
+    const box = pinSize('normal', false, MAP_PIN_SCALE);
+    return chooseLabels(pins, { width: box.width, height: box.height });
+  })();
 
   return (
     <>
@@ -129,7 +149,7 @@ const Pins = ({ features, selectedId, onSelect }: { features: NurseryFeature[]; 
             ref={m => { labelMarker(m, label); }}
             eventHandlers={{ add: e => { labelMarker(e.target as L.Marker, label); }, click: () => { onSelect(p.id); } }}
           >
-            {named && (
+            {labelled.has(p.id) && (
               <Tooltip permanent direction="right" offset={[4, 0]} className="nl-pin-label">
                 {p.name}
               </Tooltip>
@@ -145,6 +165,7 @@ const pointProps = (p: NurseryProps): PointProps => ({
   id: p.id,
   name: p.name,
   gift: p.has_active_campaign,
+  demo: p.is_demo,
   km: p.road_km ?? p.straight_km ?? null,
   approx: p.road_km === undefined || p.road_km === null,
 });
@@ -174,7 +195,7 @@ const DistrictOutlines = ({ features }: { features: NurseryFeature[] }) => {
             key={s.data.id}
             data={s.data as unknown as GeoFeature}
             interactive={false}
-            style={{ color: '#123d2a', weight: 2, opacity: 0.6, dashArray: '6 6', fill: false }}
+            style={{ color: '#1b6e44', weight: 2, opacity: 0.6, dashArray: '6 6', fill: false }}
           />
         ) : null
       )}
@@ -183,27 +204,53 @@ const DistrictOutlines = ({ features }: { features: NurseryFeature[] }) => {
 };
 
 /** The filter's district or sub-county: highlighted, and the map moves to it. */
-const SelectedBoundary = ({ shape }: { shape: GeoFeature | null }) => {
+const SelectedBoundary = ({ shape, compact }: { shape: GeoFeature | null; compact: boolean }) => {
   const map = useMap();
   useEffect(() => {
     if (!shape) return;
     const layer = L.geoJSON(shape);
-    map.flyToBounds(layer.getBounds(), { padding: [24, 24], duration: 0.6 });
-  }, [shape, map]);
+    // Phones: keep the area clear of the floating search box and the list sheet
+    const padding = compact
+      ? { paddingTopLeft: L.point(16, 120), paddingBottomRight: L.point(16, Math.round(map.getSize().y * 0.45)) }
+      : { padding: L.point(24, 24) };
+    map.flyToBounds(layer.getBounds(), { ...padding, duration: 0.6 });
+  }, [shape, map, compact]);
   if (!shape) return null;
-  return <GeoJSON key={String(shape.id)} data={shape} interactive={false} style={{ color: '#1e5b3c', weight: 3, fillColor: '#1e5b3c', fillOpacity: 0.07 }} />;
+  return <GeoJSON key={String(shape.id)} data={shape} interactive={false} style={{ color: '#1d7647', weight: 3, fillColor: '#1d7647', fillOpacity: 0.07 }} />;
 };
 
-/** Fits the view to the nurseries the first time they arrive, and after the filters change. */
-const FitToData = ({ features, fitKey }: { features: NurseryFeature[]; fitKey: string }) => {
+/**
+ * Fits the view to the nurseries the first time they arrive, and after the filters change. When a
+ * district or sub-county is chosen, the map goes to that area instead (SelectedBoundary).
+ */
+const FitToData = ({ features, fitKey, areaChosen }: { features: NurseryFeature[]; fitKey: string; areaChosen: boolean }) => {
   const map = useMap();
   const last = useRef<string | null>(null);
   useEffect(() => {
     if (features.length === 0 || last.current === fitKey) return;
     last.current = fitKey;
+    if (areaChosen) return;
     const latLngs = features.map(f => L.latLng(toLatLng(f.geometry.coordinates)));
     map.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40], maxZoom: 13 });
-  }, [features, fitKey, map]);
+  }, [features, fitKey, map, areaChosen]);
+  return null;
+};
+
+const positionKey = (p: LatLng | null) => (p ? `${String(p.lat)},${String(p.lng)}` : null);
+
+/**
+ * Goes to the user's location when they share it or pick a place, close enough to read names.
+ * A location remembered from earlier in the session doesn't move the map on arrival.
+ */
+const FollowPosition = ({ position }: { position: LatLng | null }) => {
+  const map = useMap();
+  const last = useRef<string | null>(positionKey(position));
+  useEffect(() => {
+    const key = positionKey(position);
+    if (!position || last.current === key) return;
+    last.current = key;
+    map.flyTo([position.lat, position.lng], Math.max(map.getZoom(), 12), { duration: 0.6 });
+  }, [position, map]);
   return null;
 };
 
@@ -229,7 +276,7 @@ const RouteLine = ({ coordinates }: { coordinates: number[][] | null }) => {
   return (
     <>
       <Polyline positions={positions} pathOptions={{ color: '#ffffff', weight: 9, opacity: 0.9 }} interactive={false} />
-      <Polyline positions={positions} pathOptions={{ color: '#1e5b3c', weight: 5 }} interactive={false} />
+      <Polyline positions={positions} pathOptions={{ color: '#1d7647', weight: 5 }} interactive={false} />
     </>
   );
 };
@@ -252,6 +299,8 @@ export interface NurseryMapProps {
   selectedId: string | null;
   onSelect: (id: string) => void;
   boundary: GeoFeature | null;
+  /** A district or sub-county filter is set (its outline may still be loading) */
+  areaChosen: boolean;
   route: number[][] | null;
   position: LatLng | null;
   onLocate: () => void;
@@ -260,7 +309,7 @@ export interface NurseryMapProps {
   className?: string;
 }
 
-const NurseryMap = ({ features, fitKey, selectedId, onSelect, boundary, route, position, onLocate, compact = false, className }: NurseryMapProps) => {
+const NurseryMap = ({ features, fitKey, selectedId, onSelect, boundary, areaChosen, route, position, onLocate, compact = false, className }: NurseryMapProps) => {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   return (
     <div ref={setContainer} role="region" aria-label={en.nurseries.mapLabel} className={cn(className, compact && 'nl-map-compact')}>
@@ -269,15 +318,16 @@ const NurseryMap = ({ features, fitKey, selectedId, onSelect, boundary, route, p
         {compact && <AttributionControl position="topright" prefix={false} />}
         <TileLayer url={TILE_URL} attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' maxZoom={18} crossOrigin />
         <KeepSized container={container} />
-        <FitToData features={features} fitKey={fitKey} />
+        <FitToData features={features} fitKey={fitKey} areaChosen={areaChosen} />
+        <FollowPosition position={position} />
         <FollowSelected features={features} selectedId={selectedId} />
         <DistrictOutlines features={features} />
-        <SelectedBoundary shape={boundary} />
+        <SelectedBoundary shape={boundary} compact={compact} />
         <RouteLine coordinates={route} />
         {position && (
-          <CircleMarker center={[position.lat, position.lng]} radius={8} pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#123d2a', fillOpacity: 1 }} interactive={false} />
+          <CircleMarker center={[position.lat, position.lng]} radius={8} pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#1b6e44', fillOpacity: 1 }} interactive={false} />
         )}
-        <Pins features={features} selectedId={selectedId} onSelect={onSelect} />
+        <Pins features={features} selectedId={selectedId} onSelect={onSelect} areaChosen={areaChosen} />
       </MapContainer>
       <button
         type="button"

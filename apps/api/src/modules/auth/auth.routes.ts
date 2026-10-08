@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { Router, type CookieOptions, type Request, type Response } from 'express';
 import {
   forgotPasswordSchema,
@@ -93,7 +94,18 @@ export const authRoutes = (service: AuthService, config: Config): Router => {
     sendSession(req, res, await service.login(identifier, password));
   });
 
-  router.post('/refresh', limit({ windowMinutes: 1, limit: 60 }), async (req, res) => {
+  // Every page load restores the session through /refresh, so it's limited per session (cookie), not
+  // per IP: many people share one carrier-grade NAT address. Without a cookie it's a cheap 401.
+  const perSession = limit({
+    windowMinutes: 1,
+    limit: 60,
+    key: req => {
+      const token = readRefreshCookie(req);
+      return token ? `rt:${createHash('sha256').update(token).digest('base64url').slice(0, 22)}` : `ip:${ipKeyGenerator(req.ip ?? '')}`;
+    },
+  });
+
+  router.post('/refresh', perSession, async (req, res) => {
     const token = readRefreshCookie(req);
     if (!token) throw new UnauthorizedError('Please sign in again');
     try {

@@ -6,8 +6,8 @@ const token = (name: string, fallback: string) => {
 
 export const colours = () => ({
   laterite: token('--color-laterite', '#b42318'),
-  forest: token('--color-forest', '#1e5b3c'),
-  canopy: token('--color-canopy', '#123d2a'),
+  forest: token('--color-forest', '#1d7647'),
+  canopy: token('--color-canopy', '#1b6e44'),
 });
 
 /** Forest-loss squares in three tones, relative to the run's threshold (the map only gets squares from half of it). */

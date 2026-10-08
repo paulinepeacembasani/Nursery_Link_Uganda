@@ -34,7 +34,35 @@ interface DemoNursery {
 const DATA = new URL('./demo/demo-nurseries.json.gz', import.meta.url);
 
 export const readDemoNurseries = (): DemoNursery[] =>
-  (JSON.parse(gunzipSync(readFileSync(DATA)).toString('utf8')) as { nurseries: DemoNursery[] }).nurseries;
+  (JSON.parse(gunzipSync(readFileSync(DATA)).toString('utf8')) as { nurseries: DemoNursery[] }).nurseries.map(withCropStock);
+
+/**
+ * The spreadsheets had no coffee or cocoa, so sample nurseries in districts known for those crops
+ * get some (invented, like the rest): about 2 in 5 of them, chosen by reference so it never changes.
+ * [slug, districts, typical price in UGX]
+ */
+const CROPS: [string, string[], number][] = [
+  ['robusta-coffee', ['Mukono', 'Luwero', 'Masaka', 'Mityana', 'Mpigi', 'Wakiso', 'Lwengo', 'Bushenyi', 'Jinja', 'Kamuli', 'Kyenjojo', 'Hoima'], 700],
+  ['arabica-coffee', ['Kapchorwa', 'Mbale', 'Namisindwa', 'Kasese', 'Bundibugyo', 'Kabarole', 'Arua'], 500],
+  ['cocoa', ['Bundibugyo', 'Mukono', 'Luwero', 'Hoima', 'Kasese', 'Kabarole', 'Jinja'], 1000],
+];
+
+/** A small deterministic hash (FNV-1a) of a string, for stable pseudo-random choices. */
+const hash = (text: string) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193) >>> 0;
+  return h;
+};
+
+export const withCropStock = (n: DemoNursery): DemoNursery => {
+  const extra: [string, number, number][] = [];
+  for (const [slug, districts, price] of CROPS) {
+    const h = hash(`${n.ref}:${slug}`);
+    if (!districts.includes(n.district) || h % 5 >= 2 || n.stock.some(([s]) => s === slug)) continue;
+    extra.push([slug, 2000 + (h % 19) * 1000, price + ((h >> 8) % 5) * 50]);
+  }
+  return extra.length ? { ...n, stock: [...n.stock, ...extra] } : n;
+};
 
 /** +256 7009 xxxxx from the reference number: a placeholder, never dialled or texted. */
 const placeholderPhone = (ref: string) => `+2567009${ref.replace(/\D/g, '').padStart(5, '0').slice(-5)}`;

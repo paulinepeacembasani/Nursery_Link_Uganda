@@ -21,6 +21,7 @@ const NAV = [
   { to: '/free-seedlings', label: en.nav.freeSeedlings },
   { to: '/library', label: en.nav.library },
   { to: '/news', label: en.nav.news },
+  { to: '/services', label: en.nav.services },
 ];
 
 const MARK = `<svg width="34" height="34" viewBox="${BRAND_MARK_VIEWBOX}" aria-hidden="true" class="shrink-0 rounded-[9px] ring-1 ring-paper/15">${BRAND_MARK_BODY}</svg>`;
@@ -31,8 +32,8 @@ const header = () =>
   `<a href="/" class="flex min-h-11 items-center gap-2.5 text-paper no-underline" aria-label="${esc(`${en.app.fullName}, ${en.app.home}`)}">${MARK}` +
   `<span class="flex flex-col leading-none"><span class="font-display text-xl font-semibold tracking-tight">${esc(en.app.name)}</span>` +
   `<span class="text-xs font-bold text-murram-light">${esc(en.footer.country)}</span></span></a>` +
-  '<nav aria-label="Main" class="hidden items-center gap-1 md:flex">' +
-  NAV.map(n => `<a href="${n.to}" class="flex min-h-11 items-center gap-2 rounded-sm px-3 font-bold no-underline text-paper/90">${esc(n.label)}</a>`).join('') +
+  '<nav aria-label="Main" class="hidden items-center gap-1 lg:flex">' +
+  NAV.map(n => `<a href="${n.to}" class="flex min-h-11 items-center gap-2 rounded-sm px-3 font-label text-label no-underline text-paper/90">${esc(n.label)}</a>`).join('') +
   '</nav><span class="size-11"></span></div></header>';
 
 /** Home's hero: the photo, eyebrow, headline and lead (the search and links arrive with the app). */
@@ -46,9 +47,9 @@ const homeHero = () => {
     `<img src="${hero?.src ?? `${base}.jpg`}" alt="" width="1400" height="867" fetchpriority="high" decoding="async" class="size-full object-cover object-[50%_45%]"></picture>` +
     '<div aria-hidden="true" class="absolute inset-0 bg-gradient-to-t from-canopy via-canopy/30 to-canopy/10 md:bg-gradient-to-r md:from-canopy md:via-canopy/25 md:to-transparent"></div>' +
     '<div aria-hidden="true" class="absolute inset-x-0 bottom-0 hidden h-24 bg-gradient-to-t from-canopy/70 to-transparent md:block"></div></div>' +
-    `<div class="${PAGE_FRAME} pt-56 pb-14 sm:pt-64 md:flex md:min-h-[36rem] md:items-center md:py-16 2xl:min-h-[40rem]"><div class="flex flex-col gap-4 md:w-[55%] lg:w-[52%] 2xl:w-[48%]">` +
+    `<div class="${PAGE_FRAME} flex min-h-[calc(100dvh-4rem)] flex-col justify-end pt-56 pb-16 sm:pt-64 md:justify-center md:py-16"><div class="flex flex-col gap-4 md:w-[55%] lg:w-[52%] 2xl:w-[48%]">` +
     `<p class="flex items-center gap-2 self-start rounded-full bg-paper/10 px-3 py-1 text-sm font-bold text-mist ring-1 ring-paper/25"><span aria-hidden="true" class="size-2 rounded-full bg-sky"></span>${esc(en.home.eyebrow)}</p>` +
-    `<h1 class="max-w-2xl text-[2rem] leading-[1.1] text-paper md:text-[2.5rem] lg:text-[2.75rem] 2xl:text-[3.5rem]">${esc(en.home.title)} <span class="text-murram-light">${esc(en.home.titleAccent)}</span></h1>` +
+    `<h1 class="max-w-2xl text-display text-paper">${esc(en.home.title)} <span class="text-murram-light">${esc(en.home.titleAccent)}</span></h1>` +
     `<p class="max-w-lg text-base text-mist/90 md:text-lg 2xl:max-w-xl 2xl:text-xl">${esc(en.home.lead)}</p>` +
     '</div></div></section>'
   );

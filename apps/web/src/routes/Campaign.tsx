@@ -55,7 +55,7 @@ const Campaign = () => {
 
       <header className="flex flex-col gap-3 overflow-hidden rounded-lg bg-paper p-5 pt-0 shadow-card ring-1 ring-line">
         <span aria-hidden className="-mx-5 mb-2 h-2 bg-sun" />
-        <span className="self-start rounded-full bg-sun px-2.5 py-0.5 text-xs font-bold text-canopy ring-1 ring-canopy">{en.home.modules.free}</span>
+        <span className="self-start rounded-full bg-sun px-2.5 py-0.5 text-xs font-bold text-bark ring-1 ring-canopy">{en.home.modules.free}</span>
         <h1 className="text-2xl md:text-3xl">{c.title}</h1>
         <p className="flex flex-wrap items-center gap-2 text-bark-muted">
           <FunderBadge type={c.funder_type} />
@@ -73,8 +73,8 @@ const Campaign = () => {
         <h2 id="trees" className="text-lg">{en.freeSeedlings.trees}</h2>
         <ul className="flex flex-col divide-y divide-line">
           {c.species.map(s => (
-            <li key={s.slug} className="flex justify-between gap-3 py-2">
-              <Link to={`/library/${s.slug}`} className="underline">{s.common_name}</Link>
+            <li key={s.slug} className="flex items-center justify-between gap-3">
+              <Link to={`/library/${s.slug}`} className="flex min-h-11 items-center underline">{s.common_name}</Link>
               <span className="font-bold">{formatCount(s.quantity)}</span>
             </li>
           ))}
@@ -84,7 +84,7 @@ const Campaign = () => {
       <section aria-labelledby="pickup" className="flex flex-col gap-3 rounded-lg bg-paper shadow-card p-5 ring-1 ring-line">
         <h2 id="pickup" className="text-lg">{en.freeSeedlings.pickupHeading}</h2>
         <p className="flex items-center gap-2">
-          <Link to={`/nurseries?nursery=${c.pickup_nursery.id}`} className="underline">{en.freeSeedlings.pickupAt(c.pickup_nursery.name, c.sub_county.name)}</Link>
+          <Link to={`/nurseries?nursery=${c.pickup_nursery.id}`} className="flex min-h-11 items-center underline">{en.freeSeedlings.pickupAt(c.pickup_nursery.name, c.sub_county.name)}</Link>
         </p>
         <Suspense fallback={<Skeleton className="h-72 rounded-md" />}>
           <LocationMap nursery={c.pickup_nursery.location} label={en.freeSeedlings.pickupHeading} />

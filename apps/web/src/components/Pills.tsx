@@ -13,6 +13,8 @@ const SPECIES: Record<SpeciesCategory, string> = {
   exotic: 'bg-sand text-bark',
   ornamental: `bg-murram-tint ${DARK_MURRAM}`,
   medicinal: 'bg-paper text-forest ring-1 ring-line',
+  coffee: 'bg-bark text-paper',
+  cocoa: `bg-sand ${DARK_MURRAM}`,
 };
 const NEWS: Record<NewsCategory, string> = {
   weather: 'bg-sky-tint text-lake',

@@ -32,7 +32,7 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
     const species = (await (await page.request.get('/api/v1/species?limit=1')).json()) as { data: { slug: string }[] };
     const news = (await (await page.request.get('/api/v1/news?limit=1')).json()) as { data: { slug: string }[] };
     const campaigns = (await (await page.request.get('/api/v1/campaigns?limit=1')).json()) as { data: { id: string }[] };
-    const paths = ['/', '/nurseries?view=list', '/nurseries', '/library', `/library/${species.data[0]?.slug ?? ''}`, '/news', `/news/${news.data[0]?.slug ?? ''}`,
+    const paths = ['/', '/nurseries?view=list', '/nurseries', '/library', `/library/${species.data[0]?.slug ?? ''}`, '/news', '/services', `/news/${news.data[0]?.slug ?? ''}`,
       '/free-seedlings', `/free-seedlings/${campaigns.data[0]?.id ?? ''}`, '/login', '/register', '/forgot-password', '/credits', '/no-such-page'];
     for (const size of WIDTHS) {
       await page.setViewportSize(size);
@@ -60,7 +60,7 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
     await registerBuyer(page, 'Akello Grace');
     await page.goto('/nurseries?q=Mukono%20Town&view=list');
     await page.getByRole('main').getByRole('list').getByRole('button', { name: /Mukono Town Nursery/ }).click();
-    await page.getByRole('link', { name: 'Order & deliver' }).click();
+    await page.getByRole('link', { name: 'Order', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'How many seedlings?' })).toBeVisible();
     await scan(page, 'checkout: seedlings', found);
     await page.getByRole('button', { name: /^More / }).first().click();
@@ -82,7 +82,7 @@ test.describe('accessibility (axe, WCAG 2.1 AA)', () => {
     const nursery = await first('/api/v1/nurseries?limit=1');
     const species = await first('/api/v1/species?limit=1');
     const campaign = await first('/api/v1/campaigns?limit=1');
-    const paths = ['/', '/insights', '/nurseries', `/nurseries/${nursery}`, '/nurseries/new', `/inventory?nursery=${nursery}`, '/species', `/species/${species}`, '/news', '/news/new',
+    const paths = ['/', '/insights', '/nurseries', `/nurseries/${nursery}`, '/nurseries/new', `/inventory?nursery=${nursery}`, '/species', `/species/${species}`, '/news', '/news/new', '/service-requests',
       '/delivery-rates', '/campaigns', `/campaigns/${campaign}`, `/campaigns/${campaign}/applications`, '/orders', '/payouts?status=all', '/audit-log', '/shadow'];
     // Every screen at desktop width (where admins mostly work), and the busiest ones on a phone
     const phone = new Set(['/', '/nurseries', `/nurseries/${nursery}`, '/orders', '/shadow']);

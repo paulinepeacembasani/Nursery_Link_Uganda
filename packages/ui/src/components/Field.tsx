@@ -2,7 +2,7 @@ import { forwardRef, useId, type InputHTMLAttributes, type ReactNode, type Selec
 import { cn } from '../lib/cn';
 
 const control =
-  'block w-full rounded-sm border border-field bg-paper px-3 text-base text-bark placeholder:text-bark-muted aria-[invalid=true]:border-laterite aria-[invalid=true]:bg-laterite-tint/40 disabled:bg-mist';
+  'block w-full rounded-sm border border-field bg-paper px-3 font-sans text-base text-bark placeholder:text-bark-muted aria-[invalid=true]:border-laterite aria-[invalid=true]:bg-laterite-tint/40 disabled:bg-mist';
 
 export interface FieldProps {
   label: ReactNode;
@@ -24,7 +24,7 @@ export const Field = ({ label, hint, error, hideLabel, className, children }: Fi
   const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined;
   return (
     <div className={cn('flex flex-col gap-1', className)}>
-      <label htmlFor={id} className={cn('font-bold text-bark', hideLabel && 'sr-only')}>
+      <label htmlFor={id} className={cn('font-label text-label text-bark', hideLabel && 'sr-only')}>
         {label}
       </label>
       {hint && (

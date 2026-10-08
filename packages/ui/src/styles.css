@@ -5,19 +5,31 @@
  *   @source "../../../packages/ui/src";
  * Tailwind's default palette is removed, so only these named colours exist in class names.
  */
-@import '@fontsource-variable/atkinson-hyperlegible-next';
-/* Headings: Fraunces, a warm "old-style" serif with an organic, hand-cut feel (35 KB, upright only) */
-@import '@fontsource-variable/fraunces/wght.css';
+/*
+ * Type after ugandawildlife.org (docs/typography-reference.md): Taviraj headings, Lora reading text,
+ * Open Sans for interface text, Figtree for labels (free stand-in for Gibson) and Barlow Condensed for
+ * big numbers (free stand-in for Avenir Next Condensed). All OFL, self-hosted (works offline), Latin
+ * only, font-display: swap, and only the weights used. A page downloads only the faces it shows.
+ */
+@import '@fontsource/taviraj/latin-400.css';
+@import '@fontsource/taviraj/latin-600.css';
+@import '@fontsource/lora/latin-400.css';
+@import '@fontsource/lora/latin-700.css';
+@import '@fontsource/open-sans/latin-400.css';
+@import '@fontsource/open-sans/latin-600.css';
+@import '@fontsource/open-sans/latin-700.css';
+@import '@fontsource/figtree/latin-500.css';
+@import '@fontsource/barlow-condensed/latin-700.css';
 
 @theme {
   --color-*: initial;
   /* "Earth & canopy": Uganda's green hills and red murram earth, on warm cream */
-  --color-canopy: #123d2a; /* deep canopy green: headers, headings, dark bands */
-  --color-forest: #1e5b3c; /* primary actions and links */
-  --color-seedling: #2a7d45; /* banana-leaf green: in stock, paid, success (5.1:1 on white) */
+  --color-canopy: #1b6e44; /* fresh canopy green: headers, headings, green bands (6.3:1 with white) */
+  --color-forest: #1d7647; /* primary actions and links (5.6:1 on white, 5.3:1 on cream) */
+  --color-seedling: #22804d; /* banana-leaf green: in stock, paid, success (4.9:1 on white) */
   --color-murram: #b8501f; /* red murram earth: accents, highlights (4.6:1 on cream) */
   --color-sun: #f2b705; /* free seedlings and campaigns only */
-  --color-mist: #faf6ee; /* warm cream page background */
+  --color-mist: #fbf8f1; /* light warm cream page background */
   --color-bark: #2a211b; /* body text, warm near-black */
   --color-paper: #ffffff;
   --color-transparent: transparent;
@@ -26,26 +38,31 @@
   --color-bark-muted: #5e5248;
   --color-line: #e7dece;
   --color-field: #7a6e62;
-  --color-seedling-tint: #e3f2e3;
-  --color-forest-tint: #e8efe7;
+  --color-seedling-tint: #e8f6ea;
+  --color-forest-tint: #e4f3e6;
   --color-murram-tint: #f7e5d8;
-  --color-murram-light: #f0b48f; /* murram on dark green (6.7:1 on canopy) */
+  --color-murram-light: #ffd9c2; /* murram on green (4.8:1 on canopy) */
   --color-sand: #f1e8d8; /* a deeper cream for alternating bands */
   /* Lake Victoria blues: light sky for bands and washes, deep lake for text and accents */
   --color-lake: #2b6a97; /* 5.8:1 on white, 5.1:1 on sky-tint */
   --color-sky-tint: #e5f1f9;
-  --color-sky: #a8d4ef; /* on dark green (7.7:1 on canopy) */
+  --color-sky: #d2ebfa; /* on green (5.1:1 on canopy) */
   --color-amber: #8a5300;
   --color-amber-tint: #fff1db;
   --color-laterite: #b42318;
   --color-laterite-tint: #fdecea;
   --color-sun-tint: #fdf3cf;
 
-  --font-sans: 'Atkinson Hyperlegible Next Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  /* Display: headings and large statements. Body text stays Atkinson Hyperlegible, for easy reading */
-  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
-  /* Scientific names (italic, loaded on Library routes only: library-fonts.css) */
-  --font-serif: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  /* Interface text: buttons, form fields, tables, small print */
+  --font-sans: 'Open Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Headings and large statements */
+  --font-display: 'Taviraj', Georgia, 'Times New Roman', serif;
+  /* Reading text on the public site, and scientific names (the italic loads on Library routes: library-fonts.css) */
+  --font-serif: 'Lora', Georgia, 'Times New Roman', serif;
+  /* Navigation and form labels */
+  --font-label: 'Figtree', 'Open Sans', system-ui, sans-serif;
+  /* Big numbers: counts, step numbers */
+  --font-stat: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
 
   --text-xs: 0.8125rem;
@@ -62,6 +79,46 @@
   --text-2xl--line-height: 2.125rem;
   --text-3xl: 2.125rem;
   --text-3xl--line-height: 2.5rem;
+
+  /*
+   * Role tokens (text-display, text-h1 … text-stat). These are the phone sizes; the @media block
+   * after @theme raises them from 768 px. Body text is never under 16 px on phones.
+   */
+  --text-display: 2.25rem;            /* 36 → 64 px */
+  --text-display--line-height: 1.2;
+  --text-display--letter-spacing: -0.03125rem;
+  --text-display--font-weight: 400;
+  --text-h1: 2rem;                    /* 32 → 52 px */
+  --text-h1--line-height: 1.25;
+  --text-h1--font-weight: 400;
+  --text-h2: 1.75rem;                 /* 28 → 44 px */
+  --text-h2--line-height: 1.25;
+  --text-h2--font-weight: 600;
+  --text-h3: 1.375rem;                /* 22 → 30 px */
+  --text-h3--line-height: 1.35;
+  --text-h3--letter-spacing: 0.03125rem;
+  --text-h3--font-weight: 600;
+  --text-h4: 1.125rem;                /* 18 → 19 px */
+  --text-h4--line-height: 1.6;
+  --text-h4--font-weight: 700;
+  --text-body: 1.0625rem;             /* 17 → 20 px */
+  --text-body--line-height: 1.6;
+  --text-body-sm: 1rem;               /* 16 → 15 px */
+  --text-body-sm--line-height: 1.5;
+  --text-label: 1rem;                 /* 16 → 17 px */
+  --text-label--line-height: 1.4;
+  --text-label--letter-spacing: 0.01875rem;
+  --text-label--font-weight: 500;
+  --text-button: 1rem;                /* 16 → 15 px (16 px on phones) */
+  --text-button--line-height: 1.5;
+  --text-button--letter-spacing: 0.03125rem;
+  --text-button--font-weight: 700;
+  --text-caption: 0.875rem;           /* 14 px */
+  --text-caption--line-height: 1.5;
+  --text-caption--font-weight: 600;
+  --text-stat: 3rem;                  /* 48 → 72 px */
+  --text-stat--line-height: 1;
+  --text-stat--font-weight: 700;
 
   --radius-sm: 6px;
   --radius-md: 10px;
@@ -87,6 +144,27 @@
   }
 }
 
+/* From 768 px the role tokens take their desktop sizes */
+@media (min-width: 768px) {
+  :root {
+    --text-display: 4rem;
+    --text-display--line-height: 1.3;
+    --text-h1: 3.25rem;
+    --text-h1--line-height: 1.3;
+    --text-h2: 2.75rem;
+    --text-h2--line-height: 1.2;
+    --text-h3: 1.875rem;
+    --text-h3--line-height: 1.45;
+    --text-h4: 1.1875rem;
+    --text-body: 1.25rem;
+    --text-body-sm: 0.9375rem;
+    --text-body-sm--line-height: 1.45;
+    --text-label: 1.0625rem;
+    --text-button: 0.9375rem;
+    --text-stat: 4.5rem;
+  }
+}
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
@@ -107,17 +185,16 @@
   a {
     @apply text-forest underline-offset-2;
   }
-  /* Headings in Fraunces: semi-bold, slightly tightened, and balanced over their lines */
+  /* Headings in Taviraj (h4 in Lora), balanced over their lines, never all-caps. Size classes on a
+     heading (e.g. text-2xl in a dense card) override these role sizes. */
   h1, h2, h3 {
     @apply font-display text-canopy;
-    font-weight: 620;
-    letter-spacing: -0.015em;
     text-wrap: balance;
-    font-optical-sizing: auto;
   }
-  h1 {
-    letter-spacing: -0.025em;
-  }
+  h1 { @apply text-h1; }
+  h2 { @apply text-h2; }
+  h3 { @apply text-h3; }
+  h4 { @apply font-serif text-h4 text-canopy; }
   /* Body copy: no lonely last words */
   p, li, dd {
     text-wrap: pretty;
@@ -137,7 +214,7 @@
 /* Native <select> with our chevron (Forest), drawn as a background so the control stays native */
 @layer components {
   .nl-select {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231e5b3c' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%231d7647' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
     background-size: 20px;

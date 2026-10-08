@@ -22,6 +22,7 @@ const filterQuery = (p: NurseryParams) => ({
   ...(p.district ? { district_id: p.district } : {}),
   ...(p.subCounty ? { sub_county_id: p.subCounty } : {}),
   ...(p.species ? { species: p.species } : {}),
+  ...(p.category ? { category: p.category } : {}),
 });
 
 /**
@@ -41,11 +42,15 @@ export const useNurseryMap = (p: NurseryParams, position: LatLng | null) =>
     placeholderData: keepPreviousData,
   });
 
-/** The nearest nurseries by road (the API ranks the 20 closest by straight line, then by road). */
+/**
+ * The nearest nurseries by road (the API ranks the 20 closest by straight line, then by road).
+ * Loaded whenever the location is known, not only for "Sort by nearest", so the alphabetical list
+ * and the map pins show road distances for the nurseries close enough to matter.
+ */
 export const useNearest = (p: NurseryParams, position: LatLng | null) =>
   useQuery({
     queryKey: ['nurseries', 'nearest', filterQuery(p), position],
-    enabled: p.sort === 'nearest' && position !== null,
+    enabled: position !== null,
     queryFn: async () => {
       if (!position) throw new Error('No position');
       const result = await unwrap(api.GET('/nurseries', { params: { query: { ...filterQuery(p), sort: 'nearest', limit: 20, ...position } } }));

@@ -71,7 +71,7 @@ const LoginPage = () => {
         <Button type="submit" size="lg" block busy={mutation.isPending}>
           {en.auth.login.submit}
         </Button>
-        <Link to="/forgot-password" className="self-center py-2 underline">
+        <Link to="/forgot-password" className="flex min-h-11 items-center self-center underline">
           {en.auth.login.forgot}
         </Link>
       </form>

@@ -16,6 +16,10 @@ import {
   paymentProviderSchema,
   paymentStatusSchema,
   roleSchema,
+  serviceRequestStatusSchema,
+  feedbackKindSchema,
+  feedbackStatusSchema,
+  serviceTypeSchema,
   shadowRunStatusSchema,
   speciesCategorySchema,
   vehicleSchema,
@@ -49,11 +53,16 @@ export const healthSchema = s({
   status: z.enum(['ok', 'degraded']),
   db: z.enum(['ok', 'down']),
   version: z.string(),
+  commit: z.string().nullable().describe('The deployed Git commit, when the host provides it'),
   providers: s({ payment: z.enum(['mock', 'live']), sms: z.string(), routing: z.string(), email: z.string() }),
   /** Which payment methods buyers can use right now (Airtel Money is not integrated in live mode yet) */
   payment_methods: s({ mtn_momo: z.boolean(), airtel_money: z.boolean() }),
   /** Trial switches: while off, there is no SMS code at sign-up and no payment step at checkout */
   features: s({ phone_verification: z.boolean(), payments: z.boolean() }),
+  site: s({
+    demo_notice: z.boolean().describe('Show the "sample data, still being built" notice on first visit'),
+    survey_url: z.url().nullable().describe('The needs-assessment survey (e.g. a Google Form), or null when there is none'),
+  }),
 });
 
 /** The marketplace at a glance (GET /stats), for the home page. */
@@ -302,6 +311,44 @@ export const adminApplicationSchema = s({
   ...applicationCore,
   applicant: s({ id: z.uuid(), full_name: z.string(), phone: z.string() }),
   reviewed_by: z.uuid().nullable(),
+});
+
+// ── Service requests ───────────────────────────────────────
+
+const serviceRequestCore = {
+  id: z.uuid(),
+  service: serviceTypeSchema,
+  location: z.string(),
+  land_acres: z.number().nullable(),
+  notes: z.string().nullable(),
+  status: serviceRequestStatusSchema,
+  admin_note: z.string().nullable().describe('Latest note from the team, e.g. the agreed date'),
+  created_at: isoDate,
+  updated_at: isoDate,
+};
+export const serviceRequestSchema = s(serviceRequestCore);
+export const adminServiceRequestSchema = s({
+  ...serviceRequestCore,
+  requester: s({ id: z.uuid(), full_name: z.string(), phone: z.string() }),
+  handled_by: z.uuid().nullable(),
+});
+
+// ── Feedback ───────────────────────────────────────────────
+
+export const feedbackReceiptSchema = s({ id: z.uuid(), created_at: isoDate });
+export const adminFeedbackSchema = s({
+  id: z.uuid(),
+  kind: feedbackKindSchema,
+  message: z.string(),
+  name: z.string().nullable().describe("The account's name when signed in, else what they typed"),
+  contact: z.string().nullable().describe("The account's phone when signed in, else what they typed"),
+  page: z.string().nullable(),
+  user_id: z.uuid().nullable(),
+  status: feedbackStatusSchema,
+  admin_note: z.string().nullable(),
+  handled_by: z.uuid().nullable(),
+  created_at: isoDate,
+  updated_at: isoDate,
 });
 
 // ── Orders ─────────────────────────────────────────────────
@@ -564,6 +611,10 @@ export type SpeciesProfileDto = z.infer<typeof speciesProfileSchema>;
 export type CampaignDto = z.infer<typeof campaignSchema>;
 export type ApplicationDtoShape = z.infer<typeof applicationSchema>;
 export type AdminApplicationDto = z.infer<typeof adminApplicationSchema>;
+export type ServiceRequestDtoShape = z.infer<typeof serviceRequestSchema>;
+export type AdminServiceRequestDto = z.infer<typeof adminServiceRequestSchema>;
+export type FeedbackReceiptDto = z.infer<typeof feedbackReceiptSchema>;
+export type AdminFeedbackDto = z.infer<typeof adminFeedbackSchema>;
 export type QuoteDto = z.infer<typeof quoteSchema>;
 export type OrderDtoShape = z.infer<typeof orderSchema>;
 export type OrderMapDto = z.infer<typeof orderMapSchema>;
@@ -598,6 +649,10 @@ export const namedResponseSchemas = {
   Campaign: campaignSchema,
   Application: applicationSchema,
   AdminApplication: adminApplicationSchema,
+  ServiceRequest: serviceRequestSchema,
+  AdminServiceRequest: adminServiceRequestSchema,
+  FeedbackReceipt: feedbackReceiptSchema,
+  AdminFeedback: adminFeedbackSchema,
   Quote: quoteSchema,
   Order: orderSchema,
   OrderMap: orderMapSchema,

@@ -97,6 +97,15 @@ describe('rate limits', () => {
     await request(proxied).get('/api/v1/news').set('X-Forwarded-For', '203.0.113.2').expect(200);
   });
 
+  it('limits session restores per session, not per IP (many people share one mobile-network IP)', async () => {
+    const limited = makeApp();
+    const restore = (token: string) => request(limited).post('/api/v1/auth/refresh').set('Cookie', `nl_refresh=${token}`);
+    for (let i = 0; i < 60; i++) await restore('session-a').expect(401);
+    await restore('session-a').expect(429);
+    // Someone else behind the same address still gets their own answer
+    await restore('session-b').expect(401);
+  });
+
   it('limits quotes per buyer account', async () => {
     const limited = makeApp();
     const buyer = bearer((await newBuyer(limited, providers.sms)).token);

@@ -47,6 +47,14 @@ describe('demo nursery data file', () => {
     expect(nurseries.flatMap(n => n.stock.map(([slug]) => slug)).filter(s => !slugs.has(s))).toEqual([]);
     expect(nurseries.every(n => n.stock.every(([, qty, price]) => qty > 0 && price > 0))).toBe(true);
   });
+
+  it('adds coffee and cocoa only in districts that grow them', () => {
+    const where = (slug: string) => new Set(nurseries.filter(n => n.stock.some(([s]) => s === slug)).map(n => n.district));
+    expect(where('arabica-coffee')).toContain('Kapchorwa');
+    expect(where('arabica-coffee')).not.toContain('Gulu');
+    expect(where('cocoa')).toContain('Bundibugyo');
+    expect(where('robusta-coffee')).toContain('Mukono');
+  });
 });
 
 describe('loadDemoNurseries', () => {
@@ -59,7 +67,7 @@ describe('loadDemoNurseries', () => {
              count(*) FILTER (WHERE d.name <> split_part(n.name, ' Environmental Hub', 1))::int AS wrong_district,
              (SELECT count(*)::int FROM inventory i JOIN nurseries x ON x.id = i.nursery_id WHERE x.is_demo) AS stock
       FROM nurseries n JOIN admin_boundaries d ON d.id = n.district_id WHERE n.is_demo`);
-    expect(check).toEqual({ total: 1500, wrong_district: 0, stock: 5036 });
+    expect(check).toEqual({ total: 1500, wrong_district: 0, stock: 5631 });
   });
 
   it('shows them to visitors as sample nurseries without a phone number', async () => {

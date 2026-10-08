@@ -35,6 +35,10 @@ import {
   paymentProviders,
   paymentStatuses,
   roles,
+  serviceRequestStatuses,
+  feedbackKinds,
+  feedbackStatuses,
+  serviceTypes,
   shadowRunStatuses,
   speciesCategories,
   vehicles,
@@ -82,6 +86,10 @@ export const newsCategoryEnum = pgEnum('news_category', newsCategories);
 export const vehicleEnum = pgEnum('vehicle', vehicles);
 export const otpPurposeEnum = pgEnum('otp_purpose', otpPurposes);
 export const shadowRunStatusEnum = pgEnum('shadow_run_status', shadowRunStatuses);
+export const serviceTypeEnum = pgEnum('service_type', serviceTypes);
+export const serviceRequestStatusEnum = pgEnum('service_request_status', serviceRequestStatuses);
+export const feedbackKindEnum = pgEnum('feedback_kind', feedbackKinds);
+export const feedbackStatusEnum = pgEnum('feedback_status', feedbackStatuses);
 
 // ── Accounts ───────────────────────────────────────────────
 
@@ -434,6 +442,31 @@ export const campaignApplications = pgTable(
   ]
 );
 
+// ── Service requests ───────────────────────────────────────
+
+/** A buyer asks for planting help (/services); the team phones them and records the outcome. */
+export const serviceRequests = pgTable(
+  'service_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+    service: serviceTypeEnum('service').notNull(),
+    location: text('location').notNull(),
+    landAcres: numeric('land_acres', { precision: 9, scale: 2 }),
+    notes: text('notes'),
+    status: serviceRequestStatusEnum('status').notNull().default('new'),
+    adminNote: text('admin_note'),
+    handledBy: uuid('handled_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  t => [
+    check('service_requests_land_acres_positive', sql`${t.landAcres} IS NULL OR ${t.landAcres} > 0`),
+    index('service_requests_status_created_idx').on(t.status, t.createdAt),
+    index('service_requests_user_idx').on(t.userId),
+  ]
+);
+
 // ── News ───────────────────────────────────────────────────
 
 export const newsPosts = pgTable(
@@ -538,5 +571,30 @@ export const auditLog = pgTable(
     index('audit_log_entity_idx').on(t.entity, t.entityId),
     index('audit_log_created_idx').on(t.createdAt.desc()),
     index('audit_log_action_idx').on(t.action),
+  ]
+);
+
+// ── Feedback ───────────────────────────────────────────────
+
+/** Comments from anyone using the site (/feedback); visitors may leave a name and contact to reply to. */
+export const feedback = pgTable(
+  'feedback',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    kind: feedbackKindEnum('kind').notNull(),
+    message: text('message').notNull(),
+    name: text('name'),
+    contact: text('contact'),
+    page: text('page'),
+    userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+    status: feedbackStatusEnum('status').notNull().default('new'),
+    adminNote: text('admin_note'),
+    handledBy: uuid('handled_by').references(() => users.id, { onDelete: 'set null' }),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  t => [
+    check('feedback_message_length', sql`char_length(${t.message}) BETWEEN 10 AND 2000`),
+    index('feedback_status_created_idx').on(t.status, t.createdAt),
   ]
 );

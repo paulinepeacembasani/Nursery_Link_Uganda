@@ -16,7 +16,7 @@ const Panel = ({ icon: Icon, title, help, count, to, children, urgent }: { icon:
         <Icon aria-hidden className={cn('size-5 shrink-0', count > 0 && urgent ? 'text-laterite' : 'text-forest')} />
         {title}
       </h2>
-      <span className={cn('font-display text-3xl leading-none font-semibold tabular-nums', count === 0 ? 'text-seedling' : urgent ? 'text-laterite' : 'text-murram')}>
+      <span className={cn('font-stat text-4xl leading-none font-bold tabular-nums', count === 0 ? 'text-seedling' : urgent ? 'text-laterite' : 'text-murram')}>
         {count}
       </span>
     </div>

@@ -12,7 +12,7 @@ export const CampaignCard = ({ c, detailed = false }: { c: Campaign; detailed?: 
   >
     <span aria-hidden className="h-1.5 bg-sun" />
     <span className="flex flex-1 flex-col gap-3 p-4">
-      <span className="self-start rounded-full bg-sun px-2.5 py-0.5 text-xs font-bold text-canopy ring-1 ring-canopy">{en.home.modules.free}</span>
+      <span className="self-start rounded-full bg-sun px-2.5 py-0.5 text-xs font-bold text-bark ring-1 ring-canopy">{en.home.modules.free}</span>
       <span className="font-display text-xl leading-snug font-semibold text-canopy group-hover:underline">{c.title}</span>
       {detailed && (
         <span className="flex flex-wrap items-center gap-2 text-sm text-bark-muted">

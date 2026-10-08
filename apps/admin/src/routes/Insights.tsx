@@ -23,6 +23,8 @@ const CATEGORY_COLOUR: Record<string, string> = {
   exotic: CHART.sand,
   ornamental: CHART.murram,
   medicinal: CHART.murramLight,
+  coffee: CHART.bark,
+  cocoa: CHART.lake,
 };
 
 /** Axis and tooltip labels for each bucket: 3 Oct (day), w/c 29 Sep (week), Oct 2026 (month). */

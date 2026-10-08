@@ -78,7 +78,7 @@ const Species = () => {
                   <span className="font-bold text-lake">{en.species.priceGuide}: </span>
                   {en.species.nfaPrice(formatUGX(s.reference_price.ugx), s.reference_price.pot_inches)}
                 </span>
-                <Link to="/news/nfa-seedling-price-guide" className="self-start">{en.species.priceGuideMore}</Link>
+                <Link to="/news/nfa-seedling-price-guide" className="flex min-h-11 items-center self-start">{en.species.priceGuideMore}</Link>
               </p>
             )}
             {/* FR-20: research turns straight into a supplier search near the user */}

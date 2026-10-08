@@ -56,7 +56,7 @@ const PointPicker = ({ point, onPick, boundary, label }: { point: Point | null; 
       <KeepSized />
       <Click onPick={onPick} />
       <FlyTo point={point} boundary={boundary} />
-      {boundary && <GeoJSON key={String(boundary.id)} data={boundary} interactive={false} style={{ color: '#1e5b3c', weight: 2, fillOpacity: 0.05 }} />}
+      {boundary && <GeoJSON key={String(boundary.id)} data={boundary} interactive={false} style={{ color: '#1d7647', weight: 2, fillOpacity: 0.05 }} />}
       {point && (
         <Marker
           position={[point.lat, point.lng]}

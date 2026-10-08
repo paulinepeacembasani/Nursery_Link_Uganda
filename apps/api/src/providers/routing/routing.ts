@@ -20,9 +20,12 @@ export interface RouteResult {
   steps: RouteStep[];
 }
 
-/** Road routing. Implementations: Osrm (car profile) and MockRouting (straight line × 1.3). */
+/**
+ * Road routing. Implementations: Osrm (self-hosted, car profile), OpenRouteService (hosted API on
+ * OpenStreetMap roads) and MockRouting (straight line × 1.3).
+ */
 export interface RoutingProvider {
-  readonly name: 'mock' | 'osrm';
+  readonly name: 'mock' | 'osrm' | 'openrouteservice';
   /** Turn-by-turn route between two points. Throws ProviderUnavailableError if no route can be computed. */
   route(from: LatLng, to: LatLng): Promise<RouteResult>;
   /** Road distance in km from one origin to many destinations; null where a destination is unreachable. */

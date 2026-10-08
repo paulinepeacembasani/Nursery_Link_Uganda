@@ -34,6 +34,8 @@ describe('parseConfig', () => {
     expect(() => parseConfig({ ...env, PAYMENT_PROVIDER_MODE: 'live' })).toThrow(/MTN_COLLECTION_API_KEY: required when PAYMENT_PROVIDER_MODE=live/);
     expect(() => parseConfig({ ...env, SMS_PROVIDER: 'africastalking' })).toThrow(/AT_API_KEY/);
     expect(() => parseConfig({ ...env, EMAIL_PROVIDER: 'smtp' })).toThrow(/SMTP_HOST/);
+    expect(() => parseConfig({ ...env, ROUTING_PROVIDER: 'openrouteservice' })).toThrow(/ORS_API_KEY: required when ROUTING_PROVIDER=openrouteservice/);
+    expect(parseConfig({ ...env, ROUTING_PROVIDER: 'openrouteservice', ORS_API_KEY: 'key' }).ROUTING_PROVIDER).toBe('openrouteservice');
     expect(() => parseConfig({ ...env, SMS_PROVIDER: 'africastalking', AT_USERNAME: 'sandbox', AT_API_KEY: 'key' })).toThrow(/SMS_INBOUND_TOKEN/);
     expect(parseConfig({ ...env, SMS_PROVIDER: 'africastalking', AT_USERNAME: 'sandbox', AT_API_KEY: 'key', SMS_INBOUND_TOKEN: 'x'.repeat(24) }).SMS_PROVIDER).toBe('africastalking');
   });

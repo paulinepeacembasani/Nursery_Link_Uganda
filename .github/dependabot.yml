@@ -1,0 +1,8 @@
+# Keeps the GitHub Actions used by CI and the production check up to date (monthly, one PR per update).
+# npm packages are updated by hand, because several are pinned on purpose (see CLAUDE.md).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

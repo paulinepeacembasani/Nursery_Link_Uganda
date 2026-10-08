@@ -44,7 +44,7 @@ if (config.NODE_ENV === 'production') {
     config.PAYMENT_PROVIDER_MODE === 'mock' && 'payments (no money moves; orders time out unpaid)',
     config.SMS_PROVIDER === 'mock' && 'SMS (verification codes and nursery orders are only logged)',
     config.EMAIL_PROVIDER === 'mock' && 'email',
-    config.ROUTING_PROVIDER === 'mock' && 'routing (straight-line estimates)',
+    config.ROUTING_PROVIDER === 'mock' && 'routing (straight-line estimates; set ROUTING_PROVIDER=openrouteservice or osrm)',
   ].filter(Boolean);
   if (mocks.length) logger.warn({ mocks }, 'Running in production with mock providers');
   if (config.TRUST_PROXY === 0) logger.warn('TRUST_PROXY is 0: behind a load balancer, set it to the number of proxies or every client shares one rate limit');

@@ -10,6 +10,8 @@ export interface NurseryFilters {
   /** Free text matched against species common, scientific and local names */
   species?: string | undefined;
   speciesId?: string | undefined;
+  /** Stocks at least one tree of this category */
+  category?: SpeciesCategory | undefined;
   q?: string | undefined;
   hasCampaign?: boolean | undefined;
 }
@@ -71,6 +73,10 @@ const whereSql = (f: NurseryFilters): SQL => {
     conditions.push(sql`EXISTS (SELECT 1 FROM inventory i WHERE i.nursery_id = n.id AND i.species_id = ${f.speciesId} AND i.quantity_available > 0)`);
   }
   if (f.species) conditions.push(stocksSpeciesSql(containsPattern(f.species)));
+  if (f.category) {
+    conditions.push(sql`EXISTS (SELECT 1 FROM inventory i JOIN species s ON s.id = i.species_id
+                                WHERE i.nursery_id = n.id AND i.quantity_available > 0 AND s.category = ${f.category})`);
+  }
   return sql.join(conditions, sql` AND `);
 };
 

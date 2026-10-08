@@ -4,6 +4,19 @@
 /* Tailwind scans this app and the shared UI package for class names */
 @source '../../../packages/ui/src';
 
+/*
+ * Phones: the page may draw under the notch and the home bar (viewport-fit=cover), so keep content
+ * clear of them in landscape. Bottom bars add env(safe-area-inset-bottom) themselves.
+ */
+body {
+  /* Reading text in Lora on the public site (the admin console keeps Open Sans for dense tables) */
+  font-family: var(--font-serif);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
 /* Map: custom pins carry their own styling; Leaflet's default div-icon box is removed */
 .nl-pin,
 .nl-cluster {

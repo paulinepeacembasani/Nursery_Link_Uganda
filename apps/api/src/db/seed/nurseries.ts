@@ -32,6 +32,26 @@ export const PREVIOUS_SEED_LOCATIONS: Record<string, [number, number]> = {
   'Seeta-Namuganga Nursery': [32.815, 0.47],
 };
 
+/**
+ * Stock added to existing sample nurseries after they were first seeded. Each batch is applied once
+ * per database (recorded as a `seed.stock_added` audit entry with its key), so a database seeded
+ * earlier gets it too, and an admin's later changes to these lines are never undone.
+ * [nursery name, species slug, quantity available, unit price in UGX]
+ */
+export const STOCK_ADDITIONS: { key: string; lines: [string, string, number, number][] }[] = [
+  {
+    // Coffee and cocoa categories (October 2026). Mukono grows Robusta and some cocoa, not Arabica.
+    key: '2026-10-coffee-cocoa',
+    lines: [
+      ['Kyampisi Agroforestry Group', 'robusta-coffee', 5000, 700],
+      ['Kyampisi Agroforestry Group', 'cocoa', 1500, 1000],
+      ["Kasawo Farmers' Nursery", 'robusta-coffee', 8000, 650],
+      ['Nabbaale Tree Hub', 'robusta-coffee', 6000, 700],
+      ['Nabbaale Tree Hub', 'cocoa', 2000, 1000],
+    ],
+  },
+];
+
 // Sample nurseries for development. Names, people and phone numbers are fictional.
 export const NURSERIES: SeedNursery[] = [
   {

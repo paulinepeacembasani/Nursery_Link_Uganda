@@ -3,7 +3,7 @@ import { speciesCategories } from '@nurserylink/shared';
 import { createPool } from './client.js';
 import { seed } from './seed/index.js';
 import { SPECIES } from './seed/species.js';
-import { NURSERIES } from './seed/nurseries.js';
+import { NURSERIES, STOCK_ADDITIONS } from './seed/nurseries.js';
 import { NEWS_POSTS } from './seed/content.js';
 import { inRollback, pgErrorCode, prepareTestDatabase, TEST_ADMIN } from '../../test/db.js';
 
@@ -41,7 +41,7 @@ describe('migrations and seed', () => {
       species: SPECIES.length,
       // The sample nurseries plus the 62 from the 2018 certified list (switched off until checked)
       nurseries: NURSERIES.length + 62,
-      inventory_rows: NURSERIES.reduce((sum, n) => sum + n.inventory.length, 0),
+      inventory_rows: NURSERIES.reduce((sum, n) => sum + n.inventory.length, 0) + STOCK_ADDITIONS.reduce((sum, b) => sum + b.lines.length, 0),
       delivery_rates: 2,
       campaigns: 2,
       admins: 1,
